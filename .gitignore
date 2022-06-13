@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/Mahjong/bin
+/Mahjong/obj
+/Mahjong/_logs
+/packages
+*.user
+*.db

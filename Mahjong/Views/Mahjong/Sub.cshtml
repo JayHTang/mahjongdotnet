@@ -1,0 +1,69 @@
+﻿@using Mahjong.Models.Mahjong
+@model Game
+@{
+    ViewBag.Title = "Change Players";
+    var players = (List<Player>)ViewData["players"];
+    var playersOnTable = (Dictionary<int, Player>)ViewData["playersOnTable"];
+    var huaValue = (Decimal)ViewData["huaValue"];
+    var leziValue = (Decimal)ViewData["leziValue"];
+    var prevGameId = (int)ViewData["prevGameId"];
+}
+
+<div class="container">
+    <h2>新开一局</h2>
+    @using (Html.BeginForm("Sub", "Mahjong", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <b>东:</b>
+        <select id="Player1Id" name="Player1Id">
+            <option value="@playersOnTable[1].Id" selected="selected">@playersOnTable[1].Name</option>
+            @foreach (var player in players)
+            {
+                <option value="@player.Id">@player.Name</option>
+            }
+        </select>
+        @Html.ValidationMessageFor(m => m.Player1Id, "", new { @class = "alert" })
+        <br /><p></p>
+
+        <b>南:</b>
+        <select id="Player2Id" name="Player2Id">
+            <option value="@playersOnTable[2].Id" selected="selected">@playersOnTable[2].Name</option>
+            @foreach (var player in players)
+            {
+                <option value="@player.Id">@player.Name</option>
+            }
+        </select>
+        @Html.ValidationMessageFor(m => m.Player2Id, "", new { @class = "alert" })
+        <br /><p></p>
+
+        <b>西:</b>
+        <select id="Player3Id" name="Player3Id">
+            <option value="@playersOnTable[3].Id" selected="selected">@playersOnTable[3].Name</option>
+            @foreach (var player in players)
+            {
+                <option value="@player.Id">@player.Name</option>
+            }
+        </select>
+        @Html.ValidationMessageFor(m => m.Player3Id, "", new { @class = "alert" })
+        <br /><p></p>
+
+        <b>北:</b>
+        <select id="Player4Id" name="Player4Id">
+            <option value="@playersOnTable[4].Id" selected="selected">@playersOnTable[4].Name</option>
+            @foreach (var player in players)
+            {
+                <option value="@player.Id">@player.Name</option>
+            }
+        </select>
+        @Html.ValidationMessageFor(m => m.Player4Id, "", new { @class = "alert" })
+        <br /><p></p>
+
+        @Html.Hidden("HuaValue", huaValue)
+        @Html.Hidden("LeziValue", leziValue)
+        @Html.Hidden("GameId", prevGameId)
+
+        <input class="btn btn-dark" type="submit" value="继续搓" /><br /><p></p>
+    }
+
+
+</div>

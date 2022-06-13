@@ -1,0 +1,112 @@
+﻿@using Mahjong.Models.Mahjong
+@using Highsoft.Web.Mvc.Charts
+@using Highsoft.Web.Mvc.Charts.Rendering
+
+@{
+    ViewBag.Title = "排行榜";
+    var playerBalanceSheet = (Dictionary<int, Decimal>)ViewData["playerBalanceSheet"];
+    var players = (List<Player>)ViewData["players"];
+    var playerRoundCount = (Dictionary<int, int>)ViewData["playerRoundCount"];
+}
+
+@section scripts{
+    @Scripts.Render("~/bundles/highcharts")
+    <script type="text/javascript">
+        Highcharts.setOptions({
+            lang: {
+                thousandsSep: ','
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.highcharts-credits').remove();
+        });
+    </script>
+}
+
+@{
+    var chartOptions = new Highcharts
+    {
+        Chart = new Highsoft.Web.Mvc.Charts.Chart
+        {
+            ZoomType = ChartZoomType.X
+        },
+        Title = new Title
+        {
+            Text = "胜负趋势"
+        },
+        XAxis = new List<XAxis>
+        {
+            new XAxis
+            {
+                Categories = (List<string>)ViewData["xAxis"],
+                TickInterval = 1
+            }
+        },
+        YAxis = new List<YAxis>
+        {
+            new YAxis
+            {
+                Title = new YAxisTitle
+                {
+                    Text = "$"
+                }
+            }
+        },
+        Tooltip = new Tooltip
+        {
+            Shared = true
+        },
+        PlotOptions = new PlotOptions
+        {
+            Spline = new PlotOptionsSpline
+            {
+                Marker = new PlotOptionsSplineMarker
+                {
+                    Enabled = false
+                }
+            }
+        },
+        Series = (List<Series>)ViewData["series"],
+        Exporting = new Exporting { Enabled = false }
+    };
+    chartOptions.ID = "chart";
+    var renderer = new HighchartsRenderer(chartOptions);
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xl-3">
+            <h2>排行榜</h2>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>玩家</th>
+                        <th>输赢</th>
+                        <th>盘数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < players.Count; i++)
+                    {
+                        var player = players[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@player.Name</td>
+                            <td align="right">@playerBalanceSheet[player.Id].ToString("$#,##0.00")</td>
+                            <td align="right">@playerRoundCount[player.Id]</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p>@ViewBag.message</p>
+        </div>
+        <div class="col-xl-9">
+            @Html.Raw(renderer.RenderHtml())
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,37 @@
+﻿@model IEnumerable<Mahjong.Models.Role>
+
+<br />
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+<p>
+    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-outline-primary" })
+    @Html.ActionLink("Add Role", "AddRole", null, new { @class = "btn btn-outline-primary" })
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Role
+        </th>
+        <th>
+        </th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.RoleName)
+            </td>
+            <td>
+                @if (item.RoleName.ToLower() != "Administrator")
+                {
+                    @Html.ActionLink("Delete", "DeleteUserRole",
+                   new { RoleName = item.RoleName },
+                   new
+                   {
+                       onclick = "return confirm('Are you sure you wish to delete this role?');"
+                   })
+                }
+            </td>
+        </tr>
+    }
+</table>
+

@@ -1,0 +1,39 @@
+﻿@using Mahjong.Models.Mahjong
+
+@{
+    ViewBag.Title = "历史战绩";
+    var gameHistories = (List<GameHistory>)ViewData["gameHistories"];
+}
+
+
+<div class="container">
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th>时长</th>
+                <th>花/勒子</th>
+                <th>局数</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(int i = 0; i < gameHistories.Count; i++)
+            {
+                var gameHistory = gameHistories[i];
+                <tr>
+                    <td>@(gameHistories.Count - i)</td>
+                    <td>@gameHistory.Start</td>
+                    <td>@gameHistory.End</td>
+                    <td>@gameHistory.Duration().ToString(@"hh\:mm\:ss")</td>
+                    <td>@gameHistory.HuaValue.ToString("$#,##0.00")/@gameHistory.LeziValue.ToString("$#,##0.00")</td>
+                    <td>@gameHistory.NumOfRounds</td>
+                    <td><a href="@Url.Action("Game","Mahjong",new { gameId = gameHistory.GameId })">详情</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+

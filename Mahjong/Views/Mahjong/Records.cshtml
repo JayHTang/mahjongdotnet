@@ -1,0 +1,91 @@
+﻿
+@{
+    ViewBag.Title = "记录";
+    var records = ViewBag.records;
+    var recordsWinning = ViewBag.recordsWinning;
+    var recordsLoss = ViewBag.recordsLoss;
+}
+
+@section css{
+    <style>
+        .right {
+            text-align: right;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xl-4">
+            <h2>单局记录</h2>
+
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>牌型</th>
+                        <th>盈利</th>
+                        <th>日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in records)
+                    {
+                        <tr>
+                            <td>@Html.Raw(record.Description)</td>
+                            <td class="right">@record.Winning.ToString("$#,##0.00")</td>
+                            <td class="right">@record.Date</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xl-1"></div>
+        <div class="col-xl-3">
+            <h2>盈利记录</h2>
+
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>玩家</th>
+                        <th>盈利</th>
+                        <th>日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in recordsWinning)
+                    {
+                        <tr>
+                            <td>@record.Player</td>
+                            <td class="right">@record.Winning.ToString("$#,##0.00")</td>
+                            <td class="right">@record.Date</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xl-3">
+            <h2>亏损记录</h2>
+
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>玩家</th>
+                        <th>亏损</th>
+                        <th>日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in recordsLoss)
+                    {
+                        <tr>
+                            <td>@record.Player</td>
+                            <td class="right">@record.Winning.ToString("$#,##0.00")</td>
+                            <td class="right">@record.Date</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xl-1"></div>
+    </div>
+</div>

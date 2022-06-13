@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mahjong", "Mahjong\Mahjong.csproj", "{6A153C29-3721-4A25-8352-7A1A2C322809}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		UAT|Any CPU = UAT|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.UAT|Any CPU.ActiveCfg = UAT|Any CPU
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.UAT|Any CPU.Build.0 = UAT|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E415897D-FC9B-4563-A067-2C301E20FBCC}
+	EndGlobalSection
+EndGlobal

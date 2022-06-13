@@ -1,0 +1,1 @@
+﻿UPDATE game SET huangfan = huangfan - 1 WHERE id = @gameId

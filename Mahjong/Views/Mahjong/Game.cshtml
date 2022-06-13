@@ -1,0 +1,577 @@
+﻿@using Mahjong.Models.Mahjong
+@model Result
+@{
+    ViewBag.Title = "Results";
+    var playerBook = (Dictionary<int, string>)ViewData["playerBook"];
+    var players = (List<Player>)ViewData["players"];
+    var balanceSheet = (Dictionary<int, Decimal>)ViewData["balanceSheet"];
+    var gameLogs = (List<GameLog>)ViewData["gameLogs"];
+    var hands = (List<Hand>)ViewData["hands"];
+    var huangfanCount = (int)ViewData["huangfanCount"];
+    var finished = (bool)ViewData["finished"];
+    string fieldLock = "";
+    if (finished)
+    {
+        fieldLock = "return false;";
+    }
+}
+
+<div class="container-fluid">
+    <div class="row">
+        @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+        {
+            <div class="col-lg-3">
+                <h2>Game Result</h2>
+                @using (Html.BeginForm("Game", "Mahjong", new { gameId = (int)ViewData["gameId"] }, FormMethod.Post, new { id = "result_form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <b>骰子:</b>
+                    <a href="#" data-toggle="modal" data-target="#dice-modal">
+                        <img src="~/Content/images/dice-00.png" class="dice" id="dice1" />
+                        <img src="~/Content/images/dice-00.png" class="dice" id="dice2" />
+                    </a><br /><p></p>
+                    <b>赢家:</b>
+                    <select id="WinnerId" name="WinnerId">
+                        <option value="" selected="selected">---------</option>
+                        <option value="@gameLogs.First().Player1Id">@playerBook[gameLogs.First().Player1Id]</option>
+                        <option value="@gameLogs.First().Player2Id">@playerBook[gameLogs.First().Player2Id]</option>
+                        <option value="@gameLogs.First().Player3Id">@playerBook[gameLogs.First().Player3Id]</option>
+                        <option value="@gameLogs.First().Player4Id">@playerBook[gameLogs.First().Player4Id]</option>
+                    </select><br /><p></p>
+
+                    <b>花:</b>
+                    @Html.TextBoxFor(m => m.HuaCount, new { Style = "width:82px", Type = "Number" })<br /><p></p>
+
+                    <b>牌型:</b>
+                    <select id="HandId" name="HandId">
+                        <option value="" selected="selected">---------</option>
+                        @foreach (var hand in hands)
+                        {
+                            <option value="@hand.Id">@hand.Name</option>
+                        }
+                    </select><br /><p></p>
+
+                    <b>大吊车:</b>
+                    @Html.CheckBoxFor(m => m.Lezi)<br /><p></p>
+
+                    <b>门清:</b>
+                    @Html.CheckBoxFor(m => m.Menqing)<br /><p></p>
+
+                    <b>自摸:</b>
+                    @Html.CheckBoxFor(m => m.Zimo)<br /><p></p>
+
+                    <b>点炮:</b>
+                    <select id="DianpaoId" name="DianpaoId">
+                        <option value="" selected="selected">---------</option>
+                        <option value="@gameLogs.First().Player1Id">@playerBook[gameLogs.First().Player1Id]</option>
+                        <option value="@gameLogs.First().Player2Id">@playerBook[gameLogs.First().Player2Id]</option>
+                        <option value="@gameLogs.First().Player3Id">@playerBook[gameLogs.First().Player3Id]</option>
+                        <option value="@gameLogs.First().Player4Id">@playerBook[gameLogs.First().Player4Id]</option>
+                    </select><br /><p></p>
+
+                    <b>抢杠:</b>
+                    @Html.CheckBoxFor(m => m.Qianggang)<br /><p></p>
+
+                    <b>荒番(剩<span id="huangfanCount">@(huangfanCount)</span>):</b>
+                    if (huangfanCount > 0)
+                    {
+                        @Html.CheckBox("Huangfan", new { @checked = true, @onclick = "return false;" })<br /><p></p>
+                    }
+                    else
+                    {
+                        @Html.CheckBox("Huangfan", new { @onclick = "return false;" })<br /><p></p>
+                    }
+
+                    <b>杠开:</b>
+                    @Html.CheckBoxFor(m => m.Gangkai)<br /><p></p>
+
+                    <b>海底捞月:</b>
+                    @Html.CheckBoxFor(m => m.Laoyue)<br /><p></p>
+
+                    <b>承包:</b>
+                    <select id="ChengbaoId" name="ChengbaoId">
+                        <option value="" selected="selected">---------</option>
+                        <option value="@gameLogs.First().Player1Id">@playerBook[gameLogs.First().Player1Id]</option>
+                        <option value="@gameLogs.First().Player2Id">@playerBook[gameLogs.First().Player2Id]</option>
+                        <option value="@gameLogs.First().Player3Id">@playerBook[gameLogs.First().Player3Id]</option>
+                        <option value="@gameLogs.First().Player4Id">@playerBook[gameLogs.First().Player4Id]</option>
+                    </select><br /><p></p>
+
+                    @Html.HiddenFor(m => m.Dice)
+
+                    <input class="btn btn-dark" type="submit" onclick="@fieldLock" value="胡" /><br /><p></p>
+                    <a class="btn btn-dark" href="@Url.Action("Huangfan", "Mahjong", new { gameId = (int)ViewData["gameId"], count = 1 })" role="button" onclick="@fieldLock">+1 荒番</a>
+                    <a class="btn btn-dark" href="@Url.Action("Huangfan", "Mahjong", new { gameId = (int)ViewData["gameId"], count = 2 })" role="button" onclick="@fieldLock">+2 荒番</a>
+                    <a class="btn btn-dark" href="@Url.Action("Huangfan", "Mahjong", new { gameId = (int)ViewData["gameId"], count = -1 })" role="button" onclick="@fieldLock">-1 荒番</a><br /><p></p>
+                    <a class="btn btn-dark" href="@Url.Action("Stats", "Mahjong", new { id = (int)ViewData["gameId"] })" role="button">数据统计</a>
+                    <a class="btn btn-dark" href="@Url.Action("Finish", "Mahjong", new { gameId = (int)ViewData["gameId"] })" role="button" onclick="@fieldLock">结束</a><br /><p></p>
+                }
+            </div>
+        }
+
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-lg-3">
+                    <h2>Balance</h2>
+                    <table class="table table-bordered table-hover table-sm">
+                        @foreach (var player in players)
+                        {
+                            <tr>
+                                <td><b>@player.Name</b></td>
+                                <td>@balanceSheet[player.Id].ToString("$#,##0.00")</td>
+                            </tr>
+                        }
+                    </table>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+                    {
+                        <a class="btn btn-dark" href="@Url.Action("Sub", "Mahjong", new { gameId = (int)ViewData["gameId"] })" role="button" onclick="@fieldLock">换人</a>
+                    }
+                </div>
+                <div class="col-lg-9">
+                    @using Highsoft.Web.Mvc.Charts
+                    @using Highsoft.Web.Mvc.Charts.Rendering
+                    @{
+                        var chartOptions = new Highcharts
+                        {
+                            Chart = new Highsoft.Web.Mvc.Charts.Chart
+                            {
+                                Type = ChartType.Spline,
+                                ZoomType = ChartZoomType.X
+                            },
+                            Title = new Title
+                            {
+                                Text = "Balance chart"
+                            },
+                            XAxis = new List<XAxis>{
+                                new XAxis
+                                {
+                                    TickInterval = 1
+                                }
+                            },
+                            YAxis = new List<YAxis>
+                                                    {
+                                new YAxis
+                                {
+                                    Title = new YAxisTitle
+                                    {
+                                        Text = "Balance"
+                                    }
+                                }
+                            },
+                            Tooltip = new Tooltip
+                            {
+                                Shared = true,
+                                HeaderFormat = "<span style=\"font - size: 18px\"><b>Round {point.key}</b></span><br/>",
+                                PointFormat = "{series.name}: ${point.y:,.2f}<br/>",
+                            },
+                            PlotOptions = new PlotOptions
+                            {
+                                Spline = new PlotOptionsSpline
+                                {
+                                    Marker = new PlotOptionsSplineMarker
+                                    {
+                                        Enabled = false
+                                    }
+                                }
+                            },
+                            Series = (List<Series>)ViewData["hc_series"],
+                            Exporting = new Exporting { Enabled = false }
+                        };
+
+                        chartOptions.ID = "chart";
+                        var renderer = new HighchartsRenderer(chartOptions);
+                    }
+                    @Html.Raw(renderer.RenderHtml())
+                </div>
+            </div>
+            <h2>Details</h2>
+            <table class="table table-bordered table-hover table-sm">
+                @for (int i = 0; i < gameLogs.Count; i++)
+                {
+                    GameLog gameLog = gameLogs[i];
+                    <tr>
+                        <th>Round</th>
+                        <th>@playerBook[@gameLog.Player1Id]</th>
+                        <th>@playerBook[@gameLog.Player2Id]</th>
+                        <th>@playerBook[@gameLog.Player3Id]</th>
+                        <th>@playerBook[@gameLog.Player4Id]</th>
+                        <th>Description</th>
+                        <th>Dice</th>
+                    </tr>
+                    for (int j = gameLog.Results.Count - 1; j >= 0; j--)
+                    {
+                        var roundResult = gameLog.Results[j];
+                        <tr>
+                            <td>@(j + 1)</td>
+                            <td>@roundResult.Round.Delta1.ToString("#,##0.00")</td>
+                            <td>@roundResult.Round.Delta2.ToString("#,##0.00")</td>
+                            <td>@roundResult.Round.Delta3.ToString("#,##0.00")</td>
+                            <td>@roundResult.Round.Delta4.ToString("#,##0.00")</td>
+                            <td>
+                                @if (@roundResult.Description.Length > 0)
+                                {
+                                    @roundResult.Description <br />
+                                }
+                                @foreach (RoundDetail roundDetail in roundResult.RoundDetails)
+                                {
+                                    @roundDetail.Description
+                                    if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+                                    {
+                                        <a class="modal-edit-round"
+                                           href="#"
+                                           data-toggle="modal"
+                                           data-target="#editRound"
+                                           data-description="@roundDetail.Description"
+                                           data-roundid="@roundResult.Round.Id"
+                                           data-rounddetailid="@roundDetail.Id"
+                                           data-winnerid="@roundDetail.WinnerId"
+                                           data-huaCount="@roundDetail.HuaCount"
+                                           data-handid="@roundDetail.HandId"
+                                           data-lezi="@roundDetail.Lezi.ToString()"
+                                           data-menqing="@roundDetail.Menqing.ToString()"
+                                           data-zimo="@roundDetail.Zimo.ToString()"
+                                           data-dianpaoid="@roundDetail.DianpaoId"
+                                           data-qianggang="@roundDetail.Qianggang.ToString()"
+                                           data-huangfan="@roundDetail.Huangfan.ToString()"
+                                           data-gangkai="@roundDetail.Gangkai.ToString()"
+                                           data-laoyue="@roundDetail.Laoyue.ToString()"
+                                           data-chengbaoid="@roundDetail.ChengbaoId">
+                                            <img src="~/Content/images/edit.png" style="height: 1.5em" />
+                                        </a>
+                                    }
+                                    <br />
+                                }
+                            </td>
+                            <td>@Html.Raw(roundResult.Dice)</td>
+                        </tr>
+                    }
+                }
+            </table>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="editRound" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">test</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @using (Html.BeginForm("Edit", "Mahjong", new { gameId = (int)ViewData["gameId"] }, FormMethod.Post, new { id = "edit_form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <b>赢家:</b>
+                        <select id="WinnerId" name="WinnerId">
+                            <option value="" selected="selected">---------</option>
+                            <option value="@gameLogs.First().Player1Id">@playerBook[gameLogs.First().Player1Id]</option>
+                            <option value="@gameLogs.First().Player2Id">@playerBook[gameLogs.First().Player2Id]</option>
+                            <option value="@gameLogs.First().Player3Id">@playerBook[gameLogs.First().Player3Id]</option>
+                            <option value="@gameLogs.First().Player4Id">@playerBook[gameLogs.First().Player4Id]</option>
+                        </select><br /><p></p>
+
+                        <b>花:</b>
+                        @Html.TextBoxFor(m => m.HuaCount, new { Style = "width:82px", Type = "Number" })<br /><p></p>
+
+                        <b>牌型:</b>
+                        <select id="HandId" name="HandId">
+                            <option value="" selected="selected">---------</option>
+                            @foreach (var hand in hands)
+                            {
+                                <option value="@hand.Id">@hand.Name</option>
+                            }
+                        </select><br /><p></p>
+
+                        <b>大吊车:</b>
+                        @Html.CheckBoxFor(m => m.Lezi)<br /><p></p>
+
+                        <b>门清:</b>
+                        @Html.CheckBoxFor(m => m.Menqing)<br /><p></p>
+
+                        <b>自摸:</b>
+                        @Html.CheckBoxFor(m => m.Zimo)<br /><p></p>
+
+                        <b>点炮:</b>
+                        <select id="DianpaoId" name="DianpaoId">
+                            <option value="">---------</option>
+                            <option value="@gameLogs.First().Player1Id">@playerBook[gameLogs.First().Player1Id]</option>
+                            <option value="@gameLogs.First().Player2Id">@playerBook[gameLogs.First().Player2Id]</option>
+                            <option value="@gameLogs.First().Player3Id">@playerBook[gameLogs.First().Player3Id]</option>
+                            <option value="@gameLogs.First().Player4Id">@playerBook[gameLogs.First().Player4Id]</option>
+                        </select><br /><p></p>
+
+                        <b>抢杠:</b>
+                        @Html.CheckBoxFor(m => m.Qianggang)<br /><p></p>
+
+                        <b>荒番:</b>
+                        @Html.CheckBoxFor(m => m.Huangfan)<br /><p></p>
+
+                        <b>杠开:</b>
+                        @Html.CheckBoxFor(m => m.Gangkai)<br /><p></p>
+
+                        <b>海底捞月:</b>
+                        @Html.CheckBoxFor(m => m.Laoyue)<br /><p></p>
+
+                        <b>承包:</b>
+                        <select id="ChengbaoId" name="ChengbaoId">
+                            <option value="" selected="selected">---------</option>
+                            <option value="@gameLogs.First().Player1Id">@playerBook[gameLogs.First().Player1Id]</option>
+                            <option value="@gameLogs.First().Player2Id">@playerBook[gameLogs.First().Player2Id]</option>
+                            <option value="@gameLogs.First().Player3Id">@playerBook[gameLogs.First().Player3Id]</option>
+                            <option value="@gameLogs.First().Player4Id">@playerBook[gameLogs.First().Player4Id]</option>
+                        </select><br /><p></p>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" />
+                        <input type="submit" class="btn btn-primary" value="Submit" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="dice-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="margin-left:25px;width:450px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">骰子</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <table id="dice-table" class="table table-borderless table-sm">
+                    <tr>
+                        <td><b>2</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="11"><img src="~/Content/images/dice-01.png" class="dice" /><img src="~/Content/images/dice-01.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>3</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="12"><img src="~/Content/images/dice-01.png" class="dice" /><img src="~/Content/images/dice-02.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>4</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="13"><img src="~/Content/images/dice-01.png" class="dice" /><img src="~/Content/images/dice-03.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="22"><img src="~/Content/images/dice-02.png" class="dice" /><img src="~/Content/images/dice-02.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>5</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="14"><img src="~/Content/images/dice-01.png" class="dice" /><img src="~/Content/images/dice-04.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="23"><img src="~/Content/images/dice-02.png" class="dice" /><img src="~/Content/images/dice-03.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>6</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="15"><img src="~/Content/images/dice-01.png" class="dice" /><img src="~/Content/images/dice-05.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="24"><img src="~/Content/images/dice-02.png" class="dice" /><img src="~/Content/images/dice-04.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="33"><img src="~/Content/images/dice-03.png" class="dice" /><img src="~/Content/images/dice-03.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>7</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="16"><img src="~/Content/images/dice-01.png" class="dice" /><img src="~/Content/images/dice-06.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="25"><img src="~/Content/images/dice-02.png" class="dice" /><img src="~/Content/images/dice-05.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="34"><img src="~/Content/images/dice-03.png" class="dice" /><img src="~/Content/images/dice-04.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>8</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="26"><img src="~/Content/images/dice-02.png" class="dice" /><img src="~/Content/images/dice-06.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="35"><img src="~/Content/images/dice-03.png" class="dice" /><img src="~/Content/images/dice-05.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="44"><img src="~/Content/images/dice-04.png" class="dice" /><img src="~/Content/images/dice-04.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>9</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="36"><img src="~/Content/images/dice-03.png" class="dice" /><img src="~/Content/images/dice-06.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="45"><img src="~/Content/images/dice-04.png" class="dice" /><img src="~/Content/images/dice-05.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>10</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="46"><img src="~/Content/images/dice-04.png" class="dice" /><img src="~/Content/images/dice-06.png" class="dice" /></a>
+                            <a class="two-dice" href="#" id="55"><img src="~/Content/images/dice-05.png" class="dice" /><img src="~/Content/images/dice-05.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>11</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="56"><img src="~/Content/images/dice-05.png" class="dice" /><img src="~/Content/images/dice-06.png" class="dice" /></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>12</b></td>
+                        <td>
+                            <a class="two-dice" href="#" id="66"><img src="~/Content/images/dice-06.png" class="dice" /><img src="~/Content/images/dice-06.png" class="dice" /></a>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="addedHuangfan" name="addedHuangfan" value="0">
+
+<style>
+    .dice {
+        height: 50px;
+    }
+
+    .two-dice {
+        padding-right: 30px;
+    }
+
+    #dice-table td {
+        vertical-align: middle;
+    }
+</style>
+
+@section scripts{
+    @Scripts.Render("~/bundles/highcharts")
+    <script type="text/javascript">
+        Highcharts.setOptions({
+            lang: {
+                thousandsSep: ','
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.highcharts-credits').remove();
+        });
+    </script>
+    <script type="text/javascript" src="~/Scripts/mahjong-game-validator.js"></script>
+    <script type="text/javascript">
+        $(document).on("click", ".modal-edit-round", function () {
+            var description = "编辑 " + $(this).data("description");
+            $("#editRound #modalTitle").text(description);
+            var action = $("#editRound #edit_form").prop("action") + "&roundId=" + $(this).data("roundid") + "&roundDetailId=" + $(this).data("rounddetailid");
+            $("#editRound #edit_form").prop("action", action);
+
+            var winnerId = $(this).data("winnerid");
+            if (parseInt(winnerId) > 0) {
+                $('#editRound #WinnerId option[value="' + winnerId + '"]').prop("selected", true);
+            }
+            else {
+                $("#editRound #WinnerId option:eq(0)").prop("selected", true);
+            }
+
+            var huaCount = $(this).data("huacount");
+            if (parseInt(huaCount) >= 0) {
+                $("#editRound #HuaCount").val(huaCount);
+            }
+            else {
+                $("#editRound #HuaCount").val("");
+            }
+
+            var handId = $(this).data("handid");
+            if (parseInt(winnerId) > 0) {
+                $('#editRound #HandId option[value="' + handId + '"]').prop("selected", true);
+            }
+            else {
+                $("#editRound #HandId option:eq(0)").prop("selected", true);
+            }
+
+            var lezi = $(this).data("lezi");
+            $("#editRound #Lezi").prop("checked", lezi == "True");
+
+            var menqing = $(this).data("menqing");
+            $("#editRound #Menqing").prop("checked", menqing == "True");
+
+            var zimo = $(this).data("zimo");
+            $("#editRound #Zimo").prop("checked", zimo == "True");
+
+            var dianpaoId = $(this).data("dianpaoid");
+            if (parseInt(dianpaoId) > 0) {
+                $('#editRound #DianpaoId option[value="' + dianpaoId + '"]').prop("selected", true);
+            }
+            else {
+                $("#editRound #DianpaoId option:eq(0)").prop("selected", true);
+            }
+
+            var qianggang = $(this).data("qianggang");
+            $("#editRound #Qianggang").prop("checked", qianggang == "True");
+
+            var huangfan = $(this).data("huangfan");
+            $("#editRound #Huangfan").prop("checked", huangfan == "True");
+
+            var gangkai = $(this).data("gangkai");
+            $("#editRound #Gangkai").prop("checked", gangkai == "True");
+
+            var laoyue = $(this).data("laoyue");
+            $("#editRound #Laoyue").prop("checked", laoyue == "True");
+
+            var chengbaoId = $(this).data("chengbaoid");
+            if (parseInt(chengbaoId) > 0) {
+                $('#editRound #ChengbaoId option[value="' + chengbaoId + '"]').prop("selected", true);
+            }
+            else {
+                $("#editRound #ChengbaoId option:eq(0)").prop("selected", true);
+            }
+        });
+    </script>
+    <script type="text/javascript">
+        $(window).on('load', function () {
+            if (!@Json.Encode(finished) && @Json.Encode(User.IsInRole("Administrator") || @User.IsInRole("Mahjong"))){
+                $('#dice-modal').modal('show');
+            }
+        });
+    </script>
+    <script type="text/javascript">
+        $(".two-dice").click(function (e) {
+            e.preventDefault();
+            if (!@Json.Encode(finished)){
+                var dice = $(this).attr("id");
+                //$.ajax({
+                //    success: function () { alert("Dice " + dice + " Entered"); }
+                //});
+                $('#Dice').val(dice);
+                var diceId = parseInt(dice);
+                if (!isNaN(diceId)) {
+                    var dice1 = Math.floor(diceId / 10);
+                    var dice2 = diceId % 10;
+                    if (dice1 >= 1 && dice1 <= 6 && dice2 >= 1 && dice2 <= 6) {
+                        $('#dice1').attr("src", "/Content/images/dice-0" + dice1 + ".png");
+                        $('#dice2').attr("src", "/Content/images/dice-0" + dice2 + ".png");
+                        var addHuangfan = 0;
+                        if ((dice1 == 1 && dice2 == 1) || (dice1 == 4 && dice2 == 4)) {
+                            addHuangfan = 2;
+                        }
+                        else if ((dice1 == 1 && dice2 == 4) || dice1 == dice2) {
+                            addHuangfan = 1;
+                        }
+                        var addedHuangfan = parseInt($('#addedHuangfan').val());
+                        $('#addedHuangfan').val(addHuangfan)
+                        addHuangfan -= addedHuangfan;
+                        if (addHuangfan != 0) {
+                            $.ajax({
+                                url: "@Url.Action("Huangfan", "mahjong")",
+                                data: { gameId: @ViewData["gameId"], count: addHuangfan }
+                            }).done(function () {
+                                var huangfanCount = parseInt($('#huangfanCount').text());
+                                huangfanCount += addHuangfan;
+                                $('#huangfanCount').text(huangfanCount);
+                                $('#Huangfan').prop('checked', true);
+                            });
+                        }
+                    }
+                }
+            }
+            $('#dice-modal').modal('hide');
+        });
+    </script>
+}

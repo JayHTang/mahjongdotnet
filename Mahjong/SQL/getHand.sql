@@ -1,0 +1,1 @@
+﻿SELECT * FROM hand WHERE id=@handId

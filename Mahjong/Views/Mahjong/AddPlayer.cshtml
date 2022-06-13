@@ -1,0 +1,27 @@
+﻿@using Mahjong.Models.Mahjong
+@model Player
+@{
+    ViewBag.Title = "新建玩家";
+}
+
+<div class="container">
+    <br />
+    <h2>新建玩家</h2><br />
+    @using (Html.BeginForm("AddPlayer", "Mahjong", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <table style="white-space: nowrap">
+            <tr>
+                <td style="vertical-align:top">玩家名称: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.Name)<br />
+                    @Html.ValidationMessageFor(m => m.Name)<p></p>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="提交" /></td>
+                <td></td>
+            </tr>
+        </table>
+    }
+</div>

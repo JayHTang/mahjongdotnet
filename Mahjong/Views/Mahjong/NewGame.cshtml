@@ -1,0 +1,143 @@
+﻿@using Mahjong.Models.Mahjong
+@model Game
+@{
+    ViewBag.Title = "新开一局";
+    var players = (List<Player>)ViewData["players"];
+}
+
+@section scripts{
+    <!-- Code for player list -->
+    <script type="text/javascript">
+        var ids = ['Player1Id', 'Player2Id', 'Player3Id', 'Player4Id'];
+
+        function clearSelectOptions(selectElement) {
+            var i, L = selectElement.options.length - 1;
+            for (i = L; i >= 0; i--) {
+                selectElement.remove(i);
+            }
+        }
+        function getSelectedPlayerIds() {
+            playerids = new Set();
+            for (var i = 0; i < ids.length; i++) {
+                playerid = document.getElementById(ids[i]).value;
+                if (playerid != '')
+                    playerids.add(playerid);
+            }
+            return playerids;
+        }
+        function getPlayers(id) {
+            var select = document.getElementById(id);
+            if (select.options.length <= 1) {
+                var _players = @Html.Raw(Json.Encode(players));
+                var selectedPlayers = getSelectedPlayerIds();
+
+                if (select.options.length == 0) {
+                    var option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = '---------';
+                    select.appendChild(option);
+                    select.value = '';
+                }
+
+                for (var i = 0; i < _players.length; i++) {
+                    var player = _players[i];
+                    if (!selectedPlayers.has(String(player.Id))) {
+                        var option = document.createElement('option');
+                        option.value = player.Id;
+                        option.textContent = player.Name;
+                        select.appendChild(option);
+                    }
+                }
+            }
+        }
+        function updatedPlayerList(id) {
+            for (var i = 0; i < ids.length; i++) {
+                if (id == ids[i])
+                    continue;
+                var select = document.getElementById(ids[i]);
+                if (select.options.length > 1) {
+                    var val = select.value;
+                    clearSelectOptions(select);
+                    getPlayers(ids[i]);
+                    select.value = val;
+                }
+            }
+        }
+    </script>
+
+    <!-- Validator -->
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#new_game_form').submit(function (e) {
+                var id1 = $('#new_game_form #Player1Id').val();
+                var id2 = $('#new_game_form #Player2Id').val();
+                var id3 = $('#new_game_form #Player3Id').val();
+                var id4 = $('#new_game_form #Player4Id').val();
+
+
+                if (id1 == '') {
+                    alert("选择坐东的玩家");
+                    e.preventDefault();
+                }
+                else if (id2 == '') {
+                    alert("选择坐南的玩家");
+                    e.preventDefault();
+                }
+                else if (id3 == '') {
+                    alert("选择坐西的玩家");
+                    e.preventDefault();
+                }
+                else if (id4 == '') {
+                    alert("选择坐北的玩家");
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}
+
+<div class="container">
+    <h2>新开一局</h2>
+    @using (Html.BeginForm("NewGame", "Mahjong", FormMethod.Post, new { id = "new_game_form" }))
+    {
+        @Html.AntiForgeryToken()
+        <b>东:</b>
+        <select id="Player1Id" name="Player1Id" onclick="getPlayers('Player1Id')" onchange="updatedPlayerList('Player1Id')">
+            <option value="" selected="selected">---------</option>
+        </select>
+        <br /><p></p>
+
+        <b>南:</b>
+        <select id="Player2Id" name="Player2Id" onclick="getPlayers('Player2Id')" onchange="updatedPlayerList('Player2Id')">
+            <option value="" selected="selected">---------</option>
+        </select>
+        <br /><p></p>
+
+        <b>西:</b>
+        <select id="Player3Id" name="Player3Id" onclick="getPlayers('Player3Id')" onchange="updatedPlayerList('Player3Id')">
+            <option value="" selected="selected">---------</option>
+        </select>
+        <br /><p></p>
+
+        <b>北:</b>
+        <select id="Player4Id" name="Player4Id" onclick="getPlayers('Player4Id')" onchange="updatedPlayerList('Player4Id')">
+            <option value="" selected="selected">---------</option>
+        </select>
+        <br /><p></p>
+
+        <b>花价:</b><br />
+        @Html.TextBoxFor(m => m.HuaValue, new { Type = "Number", Step = "0.1", Value = "0.5" })
+        @Html.ValidationMessageFor(m => m.HuaValue, "", new { @class = "alert" })
+        <br /><p></p>
+
+        <b>勒子价:</b><br />
+        @Html.TextBoxFor(m => m.LeziValue, new { Type = "Number", Value = "5" })
+        @Html.ValidationMessageFor(m => m.LeziValue, "", new { @class = "alert" })
+        <br /><p></p>
+
+        <input class="btn btn-dark" type="submit" value="搓起来" /><br /><p></p>
+    }
+
+
+</div>
+

@@ -1,0 +1,1 @@
+﻿INSERT INTO player (name) VALUES(@name)

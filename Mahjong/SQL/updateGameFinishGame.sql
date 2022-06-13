@@ -1,0 +1,1 @@
+﻿UPDATE game SET finished = 1 WHERE id = @gameId

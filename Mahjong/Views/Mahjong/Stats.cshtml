@@ -1,0 +1,598 @@
+﻿@using Mahjong.Models.Mahjong
+@using Highsoft.Web.Mvc.Charts
+@using Highsoft.Web.Mvc.Charts.Rendering
+@{
+    ViewBag.Title = "数据";
+    var players = (List<Player>)ViewData["players"];
+    var realPlayers = (List<Player>)ViewData["realPlayers"];
+    var hands = (List<Hand>)ViewData["hands"];
+    var statBook = (Dictionary<int, Stat>)ViewData["statBook"];
+    var diceRolls = (List<DiceRoll>)ViewData["diceRolls"];
+    var diceRollers = (List<Player>)ViewData["diceRollers"];
+    var playerTotalRolls = (Dictionary<int, int>)ViewData["playerTotalRolls"];
+}
+
+@section css{
+    <style>
+        .scroller {
+            margin-left: 110px;
+            overflow-x: scroll;
+            overflow-y: visible;
+            padding-bottom: 5px;
+            width: auto;
+        }
+
+        .sticky-col {
+            left: 30px;
+            position: absolute;
+            top: auto;
+            width: 110px;
+        }
+
+        td {
+            white-space: nowrap
+        }
+
+        .dice {
+            height: 50px;
+        }
+
+        .two-dice {
+            padding-right: 30px;
+        }
+
+        #dice-table td {
+            vertical-align: middle;
+        }
+
+        .vertical {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        .border-right-primary {
+            border-right: 4px solid #dee2e6 !important;
+        }
+
+        .nowrap-header{
+            white-space: nowrap;
+            text-align:center;
+        }
+
+
+    </style>
+}
+
+@section scripts{
+    @Scripts.Render("~/bundles/highcharts")
+    <script src="~/Scripts/highcharts/7.1.2/modules/sankey.js"></script>
+    <script src="~/Scripts/highcharts/7.1.2/modules/dependency-wheel.js"></script>
+    <script src="~/Scripts/highcharts/7.1.2/modules/export-data.js"></script>
+    <script src="~/Scripts/highcharts/7.1.2/modules/accessibility.js"></script>
+    <!--Font Awesome-->
+    <link rel="stylesheet" href="~/Scripts/fontawesome/css/all.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="~/Scripts/datatables/DataTables-1.10.18/css/dataTables.foundation.min.css" />
+    <script type="text/javascript" src="~/Scripts/datatables/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/datatables/DataTables-1.10.18/js/dataTables.bootstrap4.min.js"></script>
+    <!-- FixedColumn-->
+    <link rel="stylesheet" type="text/css" href="~/Scripts/datatables/FixedColumns-3.2.5/css/fixedColumns.bootstrap4.min.css" />
+    <script type="text/javascript" src="~/Scripts/datatables/FixedColumns-3.2.5/js/dataTables.fixedColumns.min.js"></script>
+
+    <script type="text/javascript">
+        $(window).on("load", function () {
+            var $th = $(".table-scroller th:nth-child(2)");
+            var $stickyth = $(".table-scroller th.sticky-col");
+            var height = $th.height();
+            var paddingtop = height - 11;
+            $stickyth.height(height);
+            $stickyth.css("padding-top", paddingtop);
+        });
+    </script>
+    <script>
+        dtConfig = {
+            "scrollX": true,
+            "paging": false,
+            "searching": false,
+            "info": false,
+            "fixedColumns": true
+        };
+        $(document).ready(function () {
+            $('.highcharts-credits').remove();
+            $('#statsTable').DataTable(dtConfig);
+            $('#winTable').DataTable(dtConfig);
+            $('#loseTable').DataTable(dtConfig);
+            $('#handTable').DataTable(dtConfig);
+        });
+    </script>
+
+}
+
+<div class="container-fluid">
+    @if (ViewBag.gameId == 0)
+    {
+        <h2>历史数据</h2>
+        <p>@ViewBag.message</p>
+    }
+    else
+    {
+        <h2>本场数据</h2>
+    }
+    <div>
+        <table id="statsTable" class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th rowspan="2" class="nowrap-header border-right-primary">玩家</th>
+                    <th rowspan="2" class="nowrap-header">盘数 (#)</th>
+                    <th rowspan="2" class="nowrap-header">输赢 ($)</th>
+                    <th rowspan="2" class="nowrap-header border-right-primary">平均每局输赢 ($/#)</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">胡牌</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">输牌</th>
+                    <th colspan="2" class="nowrap-header border-right-primary">无关</th>
+                    <th colspan="2" class="nowrap-header">荒庄</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th class="border-right-primary">%</th>
+                    <th>#</th>
+                    <th>%</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Player player in realPlayers)
+                {
+                    var stat = statBook[player.Id];
+                    <tr style="text-align:right">
+                        <td class="border-right-primary">@player.Name</td>
+                        <td>@stat.RoundsPlayed</td>
+                        <td>@(((double)(stat.MoneyWon - stat.MoneyLost)).ToString("$#,##0.00"))</td>
+                        <td class="border-right-primary">@(((double)(stat.MoneyWon - stat.MoneyLost) / @stat.RoundsPlayed).ToString("$#,##0.00"))</td>
+                        <td>@stat.Wins</td>
+                        <td>@(((double)stat.Wins / stat.RoundsPlayed).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.MoneyWon / stat.Wins).ToString("$#,##0.00"))</td>
+                        <td>@stat.Loses</td>
+                        <td>@(((double)stat.Loses / stat.RoundsPlayed).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.MoneyLost / stat.Loses).ToString("$#,##0.00"))</td>
+                        <td>@stat.Push</td>
+                        <td class="border-right-primary">@(((double)stat.Push / stat.RoundsPlayed).ToString("0.0%"))</td>
+                        <td>@stat.Huangfan</td>
+                        <td>@(((double)stat.Huangfan / stat.RoundsPlayed).ToString("0.0%"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <br />
+        <h3>胡牌数据</h3>
+        <table id="winTable" class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th rowspan="3" class="nowrap-header border-right-primary">玩家</th>
+                    <th colspan="4" rowspan="2" class="nowrap-header border-right-primary">总计</th>
+                    <th colspan="10" class="nowrap-header border-right-primary">胡牌</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">门清</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">海底捞月</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">杠开</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">包杠</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">抢杠</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包五家</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包一家</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header">大吊车</th>
+                </tr>
+                <tr>
+                    <th colspan="5" class="nowrap-header border-right-primary">自摸</th>
+                    <th colspan="5" class="nowrap-header border-right-primary">点炮</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$/#</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Player player in realPlayers)
+                {
+                    var stat = statBook[player.Id];
+                    <tr style="text-align:right">
+                        <td class="border-right-primary">@player.Name</td>
+                        <td>@stat.Wins</td>
+                        <td>@(((double)stat.Wins / stat.RoundsPlayed).ToString("0.0%"))</td>
+                        <td>@(((double)stat.MoneyWon).ToString("$#,##0.00"))</td>
+                        <td class="border-right-primary">@(((double)stat.MoneyWon / stat.Wins).ToString("$#,##0.00"))</td>
+                        <td>@stat.ZimoWin</td>
+                        <td>@(((double)stat.ZimoWin / stat.Wins).ToString("0.0%"))</td>
+                        <td>@(((double)stat.ZimoWinMoney).ToString("$#,##0.00"))</td>
+                        <td>@(((double)stat.ZimoWinMoney / (double)stat.MoneyWon).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ZimoWinMoney / stat.ZimoWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.DianpaoWin</td>
+                        <td>@(((double)stat.DianpaoWin / stat.Wins).ToString("0.0%"))</td>
+                        <td>@(((double)stat.DianpaoWinMoney).ToString("$#,##0.00"))</td>
+                        <td>@(((double)stat.DianpaoWinMoney / (double)stat.MoneyWon).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.DianpaoWinMoney / stat.DianpaoWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.Menqing</td>
+                        <td>@(((double)stat.Menqing / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.MenqingMoney / stat.Menqing).ToString("$#,##0.00"))</td>
+                        <td>@stat.Laoyue</td>
+                        <td>@(((double)stat.Laoyue / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.LaoyueMoney / stat.Laoyue).ToString("$#,##0.00"))</td>
+                        <td>@stat.Gangkai</td>
+                        <td>@(((double)stat.Gangkai / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.GangkaiMoney / stat.Gangkai).ToString("$#,##0.00"))</td>
+                        <td>@stat.BaogangWin</td>
+                        <td>@(((double)stat.BaogangWin / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.BaogangWinMoney / stat.BaogangWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.QianggangWin</td>
+                        <td>@(((double)stat.QianggangWin / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.QianggangWinMoney / stat.QianggangWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoZimoWin</td>
+                        <td>@(((double)stat.ChengbaoZimoWin / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoZimoWinMoney / stat.ChengbaoZimoWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoDianpaoWin</td>
+                        <td>@(((double)stat.ChengbaoDianpaoWin / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoDianpaoWinMoney / stat.ChengbaoDianpaoWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.Dadiaoche</td>
+                        <td>@(((double)stat.Dadiaoche / stat.Wins).ToString("0.0%"))</td>
+                        <td>@(((double)stat.DadiaocheMoney / stat.Dadiaoche).ToString("$#,##0.00"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <br />
+        <h3>输牌数据</h3>
+        <table id="loseTable" class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th rowspan="3" class="nowrap-header border-right-primary">玩家</th>
+                    <th colspan="4" rowspan="2" class="nowrap-header border-right-primary">总计</th>
+                    <th colspan="15" class="nowrap-header border-right-primary">输牌</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">送杠</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">被抢杠</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包五家</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包一家点炮</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header">一炮两响</th>
+                </tr>
+                <tr>
+                    <th colspan="5" class="nowrap-header border-right-primary">自摸</th>
+                    <th colspan="5" class="nowrap-header border-right-primary">点炮</th>
+                    <th colspan="5" class="nowrap-header border-right-primary">承包一家未点炮</th>
+                </tr>
+                <tr>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th>$/#</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Player player in realPlayers)
+                {
+                    var stat = statBook[player.Id];
+                    <tr style="text-align:right">
+                        <td class="border-right-primary">@player.Name</td>
+                        <td>@stat.Loses</td>
+                        <td>@(((double)stat.Loses / stat.RoundsPlayed).ToString("0.0%"))</td>
+                        <td>@(((double)stat.MoneyLost).ToString("$#,##0.00"))</td>
+                        <td class="border-right-primary">@(((double)stat.MoneyLost / stat.Loses).ToString("$#,##0.00"))</td>
+                        <td>@stat.ZimoLose</td>
+                        <td>@(((double)stat.ZimoLose / stat.Loses).ToString("0.0%"))</td>
+                        <td>@(((double)stat.ZimoLoseMoney).ToString("$#,##0.00"))</td>
+                        <td>@(((double)stat.ZimoLoseMoney / (double)stat.MoneyLost).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ZimoLoseMoney / stat.ZimoLose).ToString("$#,##0.00"))</td>
+                        <td>@stat.DianpaoLose</td>
+                        <td>@(((double)stat.DianpaoLose / stat.Loses).ToString("0.0%"))</td>
+                        <td>@(((double)stat.DianpaoLoseMoney).ToString("$#,##0.00"))</td>
+                        <td>@(((double)stat.DianpaoLoseMoney / (double)stat.MoneyLost).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.DianpaoLoseMoney / stat.DianpaoLose).ToString("$#,##0.00"))</td>
+                        <td>@stat.Chengbao1Lose</td>
+                        <td>@(((double)stat.Chengbao1Lose / stat.Loses).ToString("0.0%"))</td>
+                        <td>@(((double)stat.Chengbao1LoseMoney).ToString("$#,##0.00"))</td>
+                        <td>@(((double)stat.Chengbao1LoseMoney / (double)stat.MoneyLost).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.Chengbao1LoseMoney / stat.Chengbao1Lose).ToString("$#,##0.00"))</td>
+                        <td>@stat.BaogangLose</td>
+                        <td>@(((double)stat.BaogangLose / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.BaogangLoseMoney / stat.BaogangLose).ToString("$#,##0.00"))</td>
+                        <td>@stat.QianggangLose</td>
+                        <td>@(((double)stat.QianggangLose / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.QianggangLoseMoney / stat.QianggangLose).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoZimoLose</td>
+                        <td>@(((double)stat.ChengbaoZimoLose / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoZimoLoseMoney / stat.ChengbaoZimoLose).ToString("$#,##0.00"))</td>
+                        <td>@stat.Chengbao2Lose</td>
+                        <td>@(((double)stat.Chengbao2Lose / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.Chengbao2LoseMoney / stat.Chengbao2Lose).ToString("$#,##0.00"))</td>
+                        <td>@stat.Yipaoliangxiang</td>
+                        <td>@(((double)stat.Yipaoliangxiang / stat.Loses).ToString("0.0%"))</td>
+                        <td>@(((double)stat.YipaoliangxiangMoney / stat.Yipaoliangxiang).ToString("$#,##0.00"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <br />
+        <h3>牌型数据</h3>
+        <table id="handTable" class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th rowspan="2" class="nowrap-header border-right-primary">玩家</th>
+                    @foreach (var hand in hands)
+                    {
+                        <th colspan="3" class="nowrap-header border-right-primary">@hand.Name</th>
+                    }
+                </tr>
+                <tr>
+                    @foreach (var hand in hands)
+                    {
+                        <th>#</th>
+                        <th>%</th>
+                        <th class="border-right-primary">$/#</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Player player in realPlayers)
+                {
+                    var stat = statBook[player.Id];
+                    <tr style="text-align:right">
+                        <td class="border-right-primary">@player.Name</td>
+                        @foreach (Hand hand in hands)
+                        {
+                            <td>@stat.Hands[hand.Id].Count </td>
+                            <td>@(((double)stat.Hands[hand.Id].Count / stat.Wins).ToString("0.0%"))</td>
+                            <td class="border-right-primary">@(((double)stat.Hands[hand.Id].Money / stat.Hands[hand.Id].Count).ToString("$#,##0.00"))</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br /><br />
+    <div>
+        <h3>座位数据</h3>
+        <table class="table table-bordered table-hover table-scroller" style="width: auto;">
+            <thead>
+                <tr>
+                    <td>下家 \ <b>上家</b></td>
+                    @foreach (Player player in realPlayers)
+                    {
+                        <th>@player.Name</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Player player in realPlayers)
+                {
+                    var stat = statBook[player.Id];
+                    <tr>
+                        <td>@player.Name</td>
+                        @foreach (Player upPlayer in realPlayers)
+                        {
+                            if (upPlayer.Id == player.Id)
+                            {
+                                <td style="text-align:center;">\</td>
+                            }
+                            else if (stat.UpMoneyWon.ContainsKey(upPlayer.Id))
+                            {
+                                var sum = @stat.UpMoneyWon[upPlayer.Id];
+                                <td style="text-align:center;">@sum.ToString("$#,##0.00") (@((sum / stat.UpMoneyWonCount[upPlayer.Id]).ToString("$#,##0.00")))</td>
+                            }
+                            else
+                            {
+                                <td style="text-align:center;">N\A</td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br /><br />
+    <div class="row">
+        @*<div class="col-lg-auto">
+                <h3>关系数据</h3>
+                <table class="table table-bordered table-hover table-scroller" style="width: auto;">
+                    <thead>
+                        <tr>
+                            <td>To \ <b>From</b></td>
+                            @foreach (Player player in realPlayers)
+                            {
+                                <th>@player.Name</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Player player in realPlayers)
+                        {
+                            Stat stat = statBook[player.Id];
+                            <tr>
+                                <td>@player.Name</td>
+                                @{decimal total = 0.0M;}
+                                @foreach (Player opponent in realPlayers)
+                                {
+                                    if (opponent.Id == player.Id)
+                                    {
+                                        <td style="text-align:center;">\</td>
+                                    }
+                                    else if (stat.HeadToHead.ContainsKey(opponent.Id))
+                                    {
+                                        total += stat.HeadToHead[opponent.Id];
+                                        <td style="text-align:center;">@stat.HeadToHead[opponent.Id].ToString("$#,##0.00")</td>
+                                    }
+                                    else
+                                    {
+                                        <td style="text-align:center;">N\A</td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>*@
+        <div class="col-lg-auto">
+            @if (ViewBag.gameId == 0)
+            {
+                <div>
+                    @{ var chartOptions = new Highcharts
+                        {
+                            Title = new Title
+                            {
+                                Text = "资金流向"
+                            },
+                            Accessibility = new Accessibility
+                            {
+                                Point = new AccessibilityPoint
+                                {
+                                    ValueDescriptionFormat = "{index}. From {point.from} to {point.to}: {point.weight}."
+                                }
+                            },
+                            Series = new List<Series>
+                                    {
+                                new DependencywheelSeries
+                                {
+                                    Keys = {"from", "to", "weight"},
+                                    Name = "Cash Flow",
+                                    Data = (List<DependencywheelSeriesData>)ViewData["cashFlowData"]
+                                }
+                            },
+                            Exporting = new Exporting { Enabled = false }
+                        };
+
+                        chartOptions.ID = "chart";
+                        var renderer = new HighchartsRenderer(chartOptions);
+                    }
+
+                    @Html.Raw(renderer.RenderHtml())
+                </div>
+            }
+
+        </div>
+    </div>
+    <br /><br />
+    @if (ViewBag.gameId == 0)
+    {
+        <h3>骰子数据</h3>
+        <div class="scroller">
+            <table class="table table-bordered table-hover table-scroller" style="width: auto;">
+                <thead>
+                    <tr>
+                        <td class="sticky-col" style="width:110px"><b>骰子</b></td>
+                        @foreach (Player player in diceRollers)
+                        {
+                            if (playerTotalRolls.ContainsKey(player.Id))
+                            {
+                                <th>@player.Name</th>
+                            }
+                        }
+                        <th>理论概率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DiceRoll diceRoll in diceRolls)
+                    {
+                        <tr>
+                            @{
+                                var src1 = $"/Content/images/dice-0{diceRoll.dice.dice1}.png";
+                                var src2 = $"/Content/images/dice-0{diceRoll.dice.dice2}.png";
+                            }
+                            <td class="sticky-col" style="padding:0 5px 0 5px">
+                                <img src=@src1 class="dice" /><img src=@src2 class="dice" />
+                            </td>
+                            @{
+                                double avg = diceRoll.dice.dice1 == diceRoll.dice.dice2 ? (double)1 / 36 : (double)1 / 18;
+                                avg *= 100;
+                            }
+                            @foreach (Player player in diceRollers)
+                            {
+                                if (playerTotalRolls.ContainsKey(player.Id))
+                                {
+                                    int count = diceRoll.GetPlayerRollCount(player.Id);
+                                    int total = playerTotalRolls[player.Id];
+
+                                    double percentage = (double)count / total * 100;
+                                    int r = percentage > avg ? (int)((percentage / avg - 1) * 512) : 0;
+                                    int b = percentage < avg ? (int)((1 - percentage / avg) * 512) : 0;
+                                    int g = percentage > avg ? 255 - r : 255 - b;
+                                    g = g < 0 ? 0 : g;
+                                    percentage = (percentage / avg - 1) * 100;
+                                    string sign = percentage > 0 ? "+" : "";
+                                    <td style="background-color:rgba(@r, @g, @b, 0.75)">@sign@percentage.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)% (@count / @total) </td>
+                                }
+                            }
+                            <td style="background-color:rgba(0, 255, 0, 0.75)">@avg.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)%</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+
