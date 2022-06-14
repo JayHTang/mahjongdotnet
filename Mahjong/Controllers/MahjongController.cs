@@ -280,8 +280,16 @@ namespace Mahjong.Controllers
                     RoundDetail roundDetail = new()
                     {
                         WinnerId = result.WinnerId is null ? -1 : (int)result.WinnerId,
+                        HuaCount = result.HuaCount is null ? 0 : (int)result.HuaCount,
+                        HandId = result.HandId is null ? -1 : (int)result.HandId,
+                        Lezi = result.Lezi,
+                        Menqing = result.Menqing,
                         Zimo = result.Zimo,
                         DianpaoId = result.DianpaoId is null ? -1 : (int)result.DianpaoId,
+                        Qianggang = result.Qianggang,
+                        Huangfan = result.Huangfan,
+                        Gangkai = result.Gangkai,
+                        Laoyue = result.Laoyue,
                         ChengbaoId = result.ChengbaoId is null ? -1 : (int)result.ChengbaoId,
                         Created = DateTime.Now
                     };
@@ -1800,7 +1808,13 @@ namespace Mahjong.Controllers
                 && r1.WinnerId == r2.WinnerId
                 && r1.ChengbaoId != -1
                 && r2.ChengbaoId != -1
-                && r1.ChengbaoId != r2.ChengbaoId;
+                && r1.ChengbaoId != r2.ChengbaoId
+                && r1.HandId == r2.HandId
+                && r1.HuaCount == r2.HuaCount
+                && r1.Lezi == r2.Lezi
+                && r1.Menqing == r2.Menqing
+                && r1.Gangkai == r2.Gangkai
+                && r1.Laoyue == r2.Laoyue;
         }
 
         private string GetRealPlayerMessage(DateTime lastGameDate)
