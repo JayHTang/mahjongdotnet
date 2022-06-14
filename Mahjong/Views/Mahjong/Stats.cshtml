@@ -180,13 +180,18 @@
                     <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">杠开</th>
                     <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">包杠</th>
                     <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">抢杠</th>
-                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包五家</th>
-                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包一家</th>
-                    <th colspan="3" rowspan="2" class="nowrap-header">大吊车</th>
+                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">大吊车</th>
+                    <th colspan="18" class="nowrap-header">承包</th>
                 </tr>
                 <tr>
                     <th colspan="5" class="nowrap-header border-right-primary">自摸</th>
                     <th colspan="5" class="nowrap-header border-right-primary">点炮</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">十三家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">十家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">八家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">五家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">两家</th>
+                    <th colspan="3" class="nowrap-header">一家</th>
                 </tr>
                 <tr>
                     <th>#</th>
@@ -201,6 +206,18 @@
                     <th>#</th>
                     <th>%</th>
                     <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
                     <th>%</th>
                     <th class="border-right-primary">$/#</th>
                     <th>#</th>
@@ -264,12 +281,24 @@
                         <td>@stat.QianggangWin</td>
                         <td>@(((double)stat.QianggangWin / stat.Wins).ToString("0.0%"))</td>
                         <td class="border-right-primary">@(((double)stat.QianggangWinMoney / stat.QianggangWin).ToString("$#,##0.00"))</td>
-                        <td>@stat.ChengbaoZimoWin</td>
-                        <td>@(((double)stat.ChengbaoZimoWin / stat.Wins).ToString("0.0%"))</td>
-                        <td class="border-right-primary">@(((double)stat.ChengbaoZimoWinMoney / stat.ChengbaoZimoWin).ToString("$#,##0.00"))</td>
-                        <td>@stat.ChengbaoDianpaoWin</td>
-                        <td>@(((double)stat.ChengbaoDianpaoWin / stat.Wins).ToString("0.0%"))</td>
-                        <td class="border-right-primary">@(((double)stat.ChengbaoDianpaoWinMoney / stat.ChengbaoDianpaoWin).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoWin13</td>
+                        <td>@(((double)stat.ChengbaoWin13 / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoWin13Money / stat.ChengbaoWin13).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoWin10</td>
+                        <td>@(((double)stat.ChengbaoWin10 / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoWin10Money / stat.ChengbaoWin10).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoWin8</td>
+                        <td>@(((double)stat.ChengbaoWin8 / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoWin8Money / stat.ChengbaoWin8).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoWin5</td>
+                        <td>@(((double)stat.ChengbaoWin5 / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoWin5Money / stat.ChengbaoWin5).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoWin2</td>
+                        <td>@(((double)stat.ChengbaoWin2 / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoWin2Money / stat.ChengbaoWin2).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoWin1</td>
+                        <td>@(((double)stat.ChengbaoWin1 / stat.Wins).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoWin1Money / stat.ChengbaoWin1).ToString("$#,##0.00"))</td>
                         <td>@stat.Dadiaoche</td>
                         <td>@(((double)stat.Dadiaoche / stat.Wins).ToString("0.0%"))</td>
                         <td>@(((double)stat.DadiaocheMoney / stat.Dadiaoche).ToString("$#,##0.00"))</td>
@@ -287,14 +316,16 @@
                     <th colspan="15" class="nowrap-header border-right-primary">输牌</th>
                     <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">送杠</th>
                     <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">被抢杠</th>
-                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包五家</th>
-                    <th colspan="3" rowspan="2" class="nowrap-header border-right-primary">承包一家点炮</th>
+                    <th colspan="9" class="nowrap-header border-right-primary">承包</th>
                     <th colspan="3" rowspan="2" class="nowrap-header">一炮两响</th>
                 </tr>
                 <tr>
                     <th colspan="5" class="nowrap-header border-right-primary">自摸</th>
                     <th colspan="5" class="nowrap-header border-right-primary">点炮</th>
-                    <th colspan="5" class="nowrap-header border-right-primary">承包一家未点炮</th>
+                    <th colspan="5" class="nowrap-header border-right-primary">承包一家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">八家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">五家</th>
+                    <th colspan="3" class="nowrap-header border-right-primary">两家</th>
                 </tr>
                 <tr>
                     <th>#</th>
@@ -314,6 +345,9 @@
                     <th>#</th>
                     <th>%</th>
                     <th>$</th>
+                    <th>%</th>
+                    <th class="border-right-primary">$/#</th>
+                    <th>#</th>
                     <th>%</th>
                     <th class="border-right-primary">$/#</th>
                     <th>#</th>
@@ -353,23 +387,26 @@
                         <td>@(((double)stat.DianpaoLoseMoney).ToString("$#,##0.00"))</td>
                         <td>@(((double)stat.DianpaoLoseMoney / (double)stat.MoneyLost).ToString("0.0%"))</td>
                         <td class="border-right-primary">@(((double)stat.DianpaoLoseMoney / stat.DianpaoLose).ToString("$#,##0.00"))</td>
-                        <td>@stat.Chengbao1Lose</td>
-                        <td>@(((double)stat.Chengbao1Lose / stat.Loses).ToString("0.0%"))</td>
-                        <td>@(((double)stat.Chengbao1LoseMoney).ToString("$#,##0.00"))</td>
-                        <td>@(((double)stat.Chengbao1LoseMoney / (double)stat.MoneyLost).ToString("0.0%"))</td>
-                        <td class="border-right-primary">@(((double)stat.Chengbao1LoseMoney / stat.Chengbao1Lose).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoLose1</td>
+                        <td>@(((double)stat.ChengbaoLose1 / stat.Loses).ToString("0.0%"))</td>
+                        <td>@(((double)stat.ChengbaoLose1Money).ToString("$#,##0.00"))</td>
+                        <td>@(((double)stat.ChengbaoLose1Money / (double)stat.MoneyLost).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoLose1Money / stat.ChengbaoLose1).ToString("$#,##0.00"))</td>
                         <td>@stat.BaogangLose</td>
                         <td>@(((double)stat.BaogangLose / stat.Loses).ToString("0.0%"))</td>
                         <td class="border-right-primary">@(((double)stat.BaogangLoseMoney / stat.BaogangLose).ToString("$#,##0.00"))</td>
                         <td>@stat.QianggangLose</td>
                         <td>@(((double)stat.QianggangLose / stat.Loses).ToString("0.0%"))</td>
                         <td class="border-right-primary">@(((double)stat.QianggangLoseMoney / stat.QianggangLose).ToString("$#,##0.00"))</td>
-                        <td>@stat.ChengbaoZimoLose</td>
-                        <td>@(((double)stat.ChengbaoZimoLose / stat.Loses).ToString("0.0%"))</td>
-                        <td class="border-right-primary">@(((double)stat.ChengbaoZimoLoseMoney / stat.ChengbaoZimoLose).ToString("$#,##0.00"))</td>
-                        <td>@stat.Chengbao2Lose</td>
-                        <td>@(((double)stat.Chengbao2Lose / stat.Loses).ToString("0.0%"))</td>
-                        <td class="border-right-primary">@(((double)stat.Chengbao2LoseMoney / stat.Chengbao2Lose).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoLose8</td>
+                        <td>@(((double)stat.ChengbaoLose8 / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoLose8Money / stat.ChengbaoLose8).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoLose5</td>
+                        <td>@(((double)stat.ChengbaoLose5 / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoLose5Money / stat.ChengbaoLose5).ToString("$#,##0.00"))</td>
+                        <td>@stat.ChengbaoLose2</td>
+                        <td>@(((double)stat.ChengbaoLose2 / stat.Loses).ToString("0.0%"))</td>
+                        <td class="border-right-primary">@(((double)stat.ChengbaoLose2Money / stat.ChengbaoLose2).ToString("$#,##0.00"))</td>
                         <td>@stat.Yipaoliangxiang</td>
                         <td>@(((double)stat.Yipaoliangxiang / stat.Loses).ToString("0.0%"))</td>
                         <td>@(((double)stat.YipaoliangxiangMoney / stat.Yipaoliangxiang).ToString("$#,##0.00"))</td>

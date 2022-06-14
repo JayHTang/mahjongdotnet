@@ -27,11 +27,18 @@ namespace Mahjong.Models.Mahjong
         public int QianggangLose { get; set; }
         public int BaogangWin { get; set; }
         public int BaogangLose { get; set; }
-        public int ChengbaoZimoWin { get; set; }
-        public int ChengbaoZimoLose { get; set; }
-        public int ChengbaoDianpaoWin { get; set; }
-        public int Chengbao1Lose { get; set; }
-        public int Chengbao2Lose { get; set; }
+        public int ChengbaoWin1 { get; set; }
+        public int ChengbaoWin2 { get; set; }
+        public int ChengbaoWin5 { get; set; }
+        public int ChengbaoWin8 { get; set; }
+        public int ChengbaoWin10 { get; set; }
+        public int ChengbaoWin13 { get; set; }
+        public int ChengbaoWin15 { get; set; }
+        public int ChengbaoWin18 { get; set; }
+        public int ChengbaoLose1 { get; set; }
+        public int ChengbaoLose2 { get; set; }
+        public int ChengbaoLose5 { get; set; }
+        public int ChengbaoLose8 { get; set; }
         public int Dadiaoche { get; set; }
         public int Yipaoliangxiang { get; set; }
         public decimal MenqingMoney { get; set; }
@@ -41,11 +48,19 @@ namespace Mahjong.Models.Mahjong
         public decimal QianggangLoseMoney { get; set; }
         public decimal BaogangWinMoney { get; set; }
         public decimal BaogangLoseMoney { get; set; }
-        public decimal ChengbaoZimoWinMoney { get; set; }
-        public decimal ChengbaoZimoLoseMoney { get; set; }
-        public decimal ChengbaoDianpaoWinMoney { get; set; }
-        public decimal Chengbao1LoseMoney { get; set; }
-        public decimal Chengbao2LoseMoney { get; set; }
+        public decimal ChengbaoWinMoney { get; set; }
+        public decimal ChengbaoWin1Money { get; set; }
+        public decimal ChengbaoWin2Money { get; set; }
+        public decimal ChengbaoWin5Money { get; set; }
+        public decimal ChengbaoWin8Money { get; set; }
+        public decimal ChengbaoWin10Money { get; set; }
+        public decimal ChengbaoWin13Money { get; set; }
+        public decimal ChengbaoWin15Money { get; set; }
+        public decimal ChengbaoWin18Money { get; set; }
+        public decimal ChengbaoLose1Money { get; set; }
+        public decimal ChengbaoLose2Money { get; set; }
+        public decimal ChengbaoLose5Money { get; set; }
+        public decimal ChengbaoLose8Money { get; set; }
         public decimal DadiaocheMoney { get; set; }
         public decimal YipaoliangxiangMoney { get; set; }
         public Dictionary<int, HandStats> Hands { get; set; }

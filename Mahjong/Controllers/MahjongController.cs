@@ -842,8 +842,8 @@ namespace Mahjong.Controllers
                         }
                     }
 
-                    decimal win = (decimal)roundDetail.GetType().GetProperty(FindDelta(dr, roundDetail.WinnerId), defaultFlags | BindingFlags.IgnoreCase).GetValue(roundDetail); // reflection trick to get the specific delta
-                    decimal dianpaoLoss = roundDetail.DianpaoId == - 1 ? 0 : -(decimal)roundDetail.GetType().GetProperty(FindDelta(dr, roundDetail.DianpaoId), defaultFlags | BindingFlags.IgnoreCase).GetValue(roundDetail); // reflection trick to get the specific delta
+                    decimal win = (decimal)ReflectionUtility.GetValue(roundDetail, FindDelta(dr, roundDetail.WinnerId), true);
+                    decimal dianpaoLoss = roundDetail.DianpaoId == -1 ? 0 : -(decimal)ReflectionUtility.GetValue(roundDetail, FindDelta(dr, roundDetail.DianpaoId), true);
 
                     // 自摸
                     if (roundDetail.Zimo)
@@ -857,7 +857,7 @@ namespace Mahjong.Controllers
                         {
                             if(playerId != roundDetail.WinnerId)
                             {
-                                decimal loss = -(decimal)roundDetail.GetType().GetProperty(FindDelta(dr, playerId), defaultFlags | BindingFlags.IgnoreCase).GetValue(roundDetail); // reflection trick to get the specific delta
+                                decimal loss = -(decimal)ReflectionUtility.GetValue(roundDetail, FindDelta(dr, playerId), true); 
                                 if (loss > 0)
                                 {
                                     statBook[playerId].ZimoLose++;
@@ -932,31 +932,76 @@ namespace Mahjong.Controllers
                     // 承包赢
                     if (roundDetail.ChengbaoId != -1)
                     {
-                        decimal loss = -(decimal)roundDetail.GetType().GetProperty(FindDelta(dr, roundDetail.ChengbaoId), defaultFlags | BindingFlags.IgnoreCase).GetValue(roundDetail); // reflection trick to get the specific delta
-                        // 五家
+                        decimal loss = -(decimal)ReflectionUtility.GetValue(roundDetail, FindDelta(dr, roundDetail.ChengbaoId), true);
+                        // 自摸承包
                         if (roundDetail.Zimo)
                         {
-                            statBook[roundDetail.WinnerId].ChengbaoZimoWin++;
-                            statBook[roundDetail.WinnerId].ChengbaoZimoWinMoney += win;
-                            statBook[roundDetail.ChengbaoId].ChengbaoZimoLose++;
-                            statBook[roundDetail.ChengbaoId].ChengbaoZimoLoseMoney += loss;
+                            statBook[roundDetail.WinnerId].ChengbaoWinMoney += win; // temp winning 
+
+                            if (!(i + 1 < roundDetails.Count && roundDetails[i + 1].RoundId == roundDetail.RoundId && IsMultipleChengBao(roundDetails[i + 1], roundDetail)))
+                            {
+                                // only calculates at the last detail if multiple chengbao happens
+                                int count = 5;
+                                for (int k = 1; k <= 2; k++)
+                                {
+                                    if (i - k >= 0)
+                                    {
+                                        if (roundDetails[i - k].RoundId == roundDetails[i - k + 1].RoundId && IsMultipleChengBao(roundDetails[i - k], roundDetails[i - k + 1]))
+                                        {
+                                            count += 5;
+                                            if (roundDetails[i - k].Qianggang)
+                                            {
+                                                count += 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                string winCountProperty = $"ChengbaoWin{count}";
+                                string WinMoneyProperty = $"ChengbaoWin{count}Money";
+                                ReflectionUtility.Increment(statBook[roundDetail.WinnerId], winCountProperty);
+                                ReflectionUtility.Increment(statBook[roundDetail.WinnerId], WinMoneyProperty, statBook[roundDetail.WinnerId].ChengbaoWinMoney);
+
+                                statBook[roundDetail.WinnerId].ChengbaoWinMoney = 0; // reset
+                            }
+                            
+                            if (roundDetail.Qianggang)
+                            {
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose8++;
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose8Money += loss;
+                            }
+                            else
+                            {
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose5++;
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose5Money += loss;
+                            }
                         }
                         // 一家/两家
                         else
                         {
-                            statBook[roundDetail.WinnerId].ChengbaoDianpaoWin++;
-                            statBook[roundDetail.WinnerId].ChengbaoDianpaoWinMoney += win;
                             if (roundDetail.ChengbaoId == roundDetail.DianpaoId)
                             {
                                 // 两家
-                                statBook[roundDetail.ChengbaoId].Chengbao2Lose++;
-                                statBook[roundDetail.ChengbaoId].Chengbao2LoseMoney += loss;
+                                statBook[roundDetail.WinnerId].ChengbaoWin2++;
+                                statBook[roundDetail.WinnerId].ChengbaoWin2Money += win;
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose2++;
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose2Money += loss;
                             }
                             else
                             {
                                 // 一家
-                                statBook[roundDetail.ChengbaoId].Chengbao1Lose++;
-                                statBook[roundDetail.ChengbaoId].Chengbao1LoseMoney += loss;
+                                statBook[roundDetail.WinnerId].ChengbaoWin1++;
+                                statBook[roundDetail.WinnerId].ChengbaoWin1Money += win;
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose1++;
+                                statBook[roundDetail.ChengbaoId].ChengbaoLose1Money += loss;
                             }
                             
                         }
@@ -1825,6 +1870,5 @@ namespace Mahjong.Controllers
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly DbUtility dbUtility = DbFactory.GetDbUtility(Db.SQLite);
         private static readonly string sqlServer = ConfigurationManager.ConnectionStrings["Mahjong"].ConnectionString;
-        private static readonly BindingFlags defaultFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
     }
 }
