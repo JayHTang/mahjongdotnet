@@ -103,6 +103,7 @@
             $('#winTable').DataTable(dtConfig);
             $('#loseTable').DataTable(dtConfig);
             $('#handTable').DataTable(dtConfig);
+            $('#diceTable').DataTable(dtConfig);
         });
     </script>
 
@@ -575,20 +576,20 @@
     <br /><br />
     @if (ViewBag.gameId == 0)
     {
-        <h3>骰子数据</h3>
-        <div class="scroller">
-            <table class="table table-bordered table-hover table-scroller" style="width: auto;">
+        <div>
+            <h3>骰子数据</h3>
+            <table id="diceTable" class="table table-bordered table-hover">
                 <thead>
                     <tr>
-                        <td class="sticky-col" style="width:110px"><b>骰子</b></td>
+                        <th class="nowrap-header"><b>骰子</b></th>
                         @foreach (Player player in diceRollers)
                         {
                             if (playerTotalRolls.ContainsKey(player.Id))
                             {
-                                <th>@player.Name</th>
+                                <th class="nowrap-header">@player.Name</th>
                             }
                         }
-                        <th>理论概率</th>
+                        <th class="nowrap-header">理论概率</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -599,7 +600,7 @@
                                 var src1 = $"/Content/images/dice-0{diceRoll.dice.dice1}.png";
                                 var src2 = $"/Content/images/dice-0{diceRoll.dice.dice2}.png";
                             }
-                            <td class="sticky-col" style="padding:0 5px 0 5px">
+                            <td style="padding:0 5px 0 5px">
                                 <img src=@src1 class="dice" /><img src=@src2 class="dice" />
                             </td>
                             @{
