@@ -30,7 +30,7 @@
                 <li class="nav-item"> @Html.ActionLink("历史战绩", "History", "Mahjong", null, new { @class = "nav-link" })</li>
                 <li class="nav-item"> @Html.ActionLink("排行榜", "LeaderBoard", "Mahjong", null, new { @class = "nav-link" })</li>
                 <li class="nav-item"> @Html.ActionLink("数据", "Stats", "Mahjong", new { id = 0 }, new { @class = "nav-link" })</li>
-                <li class="nav-item"> @Html.ActionLink("记录", "Records", "Mahjong", null, new { @class = "nav-link" })</li>
+                <li class="nav-item"> @Html.ActionLink("纪录", "Records", "Mahjong", null, new { @class = "nav-link" })</li>
                 @if (User.IsInRole("Administrator")) 
                 {
                     <li class="nav-item">@Html.ActionLink("系统设置", "Index", "Admin", null, new { @class = "nav-link" })</li>
