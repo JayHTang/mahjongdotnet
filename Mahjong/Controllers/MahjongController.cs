@@ -938,33 +938,19 @@ namespace Mahjong.Controllers
                         {
                             statBook[roundDetail.WinnerId].ChengbaoWinMoney += win; // temp winning 
 
-                            if (!(i + 1 < roundDetails.Count && roundDetails[i + 1].RoundId == roundDetail.RoundId && IsMultipleChengBao(roundDetails[i + 1], roundDetail)))
+                            if (i == roundDetails.Count - 1)
                             {
-                                // only calculates at the last detail if multiple chengbao happens
-                                int count = 5;
-                                for (int k = 1; k <= 2; k++)
+                                // only calculates at the last detail
+                                int count = 5 * roundDetails.Count;
+                                foreach(RoundDetail rd in roundDetails)
                                 {
-                                    if (i - k >= 0)
+                                    if (rd.Qianggang)
                                     {
-                                        if (roundDetails[i - k].RoundId == roundDetails[i - k + 1].RoundId && IsMultipleChengBao(roundDetails[i - k], roundDetails[i - k + 1]))
-                                        {
-                                            count += 5;
-                                            if (roundDetails[i - k].Qianggang)
-                                            {
-                                                count += 3;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
+                                        count += 3;
                                         break;
                                     }
                                 }
-
+                                
                                 string winCountProperty = $"ChengbaoWin{count}";
                                 string WinMoneyProperty = $"ChengbaoWin{count}Money";
                                 ReflectionUtility.Increment(statBook[roundDetail.WinnerId], winCountProperty);
