@@ -594,6 +594,17 @@ namespace Mahjong.Controllers
 
         public ActionResult History()
         {
+            // look for open games and close them
+            foreach (DataRow game in dbUtility.Read(sqlServer, SQL.getGamesUnfinished).Rows){
+                int id = Convert.ToInt32(game["id"]);
+                DateTime created = Convert.ToDateTime(game["created"]);
+                if ((DateTime.Now - created).TotalHours > 24)
+                {
+                    // no game should last more than 24 hours
+                    FinishGame(id);
+                }
+            }
+
             ViewData["gameHistories"] = GetGameHistory();
 
             return View();
