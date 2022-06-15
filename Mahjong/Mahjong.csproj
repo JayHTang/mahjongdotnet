@@ -305,8 +305,6 @@
     <Compile Include="Utility\Reflection.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\css\bootstrap.css" />
-    <Content Include="Content\css\bootstrap.min.css" />
     <Content Include="Content\images\dice-00.png" />
     <Content Include="Content\images\dice-01.png" />
     <Content Include="Content\images\dice-02.png" />
@@ -315,9 +313,6 @@
     <Content Include="Content\images\dice-05.png" />
     <Content Include="Content\images\dice-06.png" />
     <Content Include="Content\images\edit.png" />
-    <Content Include="Content\js\drilldown.js" />
-    <Content Include="Content\js\exporting.js" />
-    <Content Include="Content\js\highcharts.js" />
     <Content Include="Content\js\site.js" />
     <Content Include="Content\js\site.min.js" />
     <Content Include="Content\PagedList.css" />
@@ -328,8 +323,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Content\css\bootstrap.min.css.map" />
-    <Content Include="Content\css\bootstrap.css.map" />
     <Content Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
