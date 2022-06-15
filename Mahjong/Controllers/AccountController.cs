@@ -70,7 +70,7 @@ namespace Mahjong.Controllers
         public ActionResult Login(string returnUrl)
         {
             // Create the Admin account using setting in Web.config (if needed)
-            CreateAdminIfNeeded();
+            //CreateAdminIfNeeded();
 
             ViewBag.ReturnUrl = returnUrl;
             return View();
