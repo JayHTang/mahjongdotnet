@@ -74,9 +74,6 @@
     <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Coinbase, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Coinbase.3.0.1\lib\net452\Coinbase.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -86,29 +83,29 @@
     <Reference Include="Highcharts, Version=8.1.2.3, Culture=neutral, PublicKeyToken=90b74bd27a557bd3, processorArchitecture=MSIL">
       <HintPath>..\packages\Highsoft.Highcharts.8.1.2.3\lib\netstandard2.0\Highcharts.dll</HintPath>
     </Reference>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=2.0.14.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.14\lib\net45\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.2.4.0\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AI.DependencyCollector, Version=2.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.8.1\lib\net45\Microsoft.AI.DependencyCollector.dll</HintPath>
+    <Reference Include="Microsoft.AI.DependencyCollector, Version=2.20.0.103, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.20.0\lib\net452\Microsoft.AI.DependencyCollector.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AI.PerfCounterCollector, Version=2.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.8.1\lib\net45\Microsoft.AI.PerfCounterCollector.dll</HintPath>
+    <Reference Include="Microsoft.AI.PerfCounterCollector, Version=2.20.0.103, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.20.0\lib\net452\Microsoft.AI.PerfCounterCollector.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AI.ServerTelemetryChannel, Version=2.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.8.1\lib\net45\Microsoft.AI.ServerTelemetryChannel.dll</HintPath>
+    <Reference Include="Microsoft.AI.ServerTelemetryChannel, Version=2.20.0.103, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.20.0\lib\net452\Microsoft.AI.ServerTelemetryChannel.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AI.Web, Version=2.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.Web.2.8.1\lib\net45\Microsoft.AI.Web.dll</HintPath>
+    <Reference Include="Microsoft.AI.Web, Version=2.20.0.103, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.Web.2.20.0\lib\net452\Microsoft.AI.Web.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AI.WindowsServer, Version=2.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.2.8.1\lib\net45\Microsoft.AI.WindowsServer.dll</HintPath>
+    <Reference Include="Microsoft.AI.WindowsServer, Version=2.20.0.103, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.2.20.0\lib\net452\Microsoft.AI.WindowsServer.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ApplicationInsights, Version=2.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.2.8.1\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
+    <Reference Include="Microsoft.ApplicationInsights, Version=2.20.0.103, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.2.20.0\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.2\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
@@ -121,6 +118,9 @@
     </Reference>
     <Reference Include="Microsoft.AspNet.TelemetryCorrelation, Version=1.0.8.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.TelemetryCorrelation.1.0.8\lib\net45\Microsoft.AspNet.TelemetryCorrelation.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=3.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
@@ -162,8 +162,8 @@
     <Reference Include="PagedList.Mvc, Version=4.5.0.0, Culture=neutral, PublicKeyToken=abbb863e9397c5e1, processorArchitecture=MSIL">
       <HintPath>..\packages\PagedList.Mvc.4.5.0.0\lib\net40\PagedList.Mvc.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp, Version=106.5.4.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.5.4\lib\net452\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=108.0.1.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.108.0.1\lib\netstandard2.0\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -180,11 +180,12 @@
     <Reference Include="System.Data.SQLite.Linq, Version=1.0.115.5, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Data.SQLite.Linq.1.0.115.5\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.7.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.5.0.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Linq" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -194,13 +195,26 @@
       <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.InteropServices" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Text.Encodings.Web, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.6.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.5.0.0\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Threading.Thread" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -305,33 +319,6 @@
     <Content Include="Content\css\bootstrap-reboot.min.css" />
     <Content Include="Content\css\bootstrap.css" />
     <Content Include="Content\css\bootstrap.min.css" />
-    <Content Include="Content\gijgo\combined\demo.css" />
-    <Content Include="Content\gijgo\combined\demo.min.css" />
-    <Content Include="Content\gijgo\combined\gijgo.css" />
-    <Content Include="Content\gijgo\combined\gijgo.min.css" />
-    <Content Include="Content\gijgo\fonts\gijgo-material.svg" />
-    <Content Include="Content\gijgo\modular\checkbox.css" />
-    <Content Include="Content\gijgo\modular\checkbox.min.css" />
-    <Content Include="Content\gijgo\modular\core.css" />
-    <Content Include="Content\gijgo\modular\core.min.css" />
-    <Content Include="Content\gijgo\modular\datepicker.css" />
-    <Content Include="Content\gijgo\modular\datepicker.min.css" />
-    <Content Include="Content\gijgo\modular\datetimepicker.css" />
-    <Content Include="Content\gijgo\modular\datetimepicker.min.css" />
-    <Content Include="Content\gijgo\modular\dialog.css" />
-    <Content Include="Content\gijgo\modular\dialog.min.css" />
-    <Content Include="Content\gijgo\modular\dropdown.css" />
-    <Content Include="Content\gijgo\modular\dropdown.min.css" />
-    <Content Include="Content\gijgo\modular\editor.css" />
-    <Content Include="Content\gijgo\modular\editor.min.css" />
-    <Content Include="Content\gijgo\modular\grid.css" />
-    <Content Include="Content\gijgo\modular\grid.min.css" />
-    <Content Include="Content\gijgo\modular\slider.css" />
-    <Content Include="Content\gijgo\modular\slider.min.css" />
-    <Content Include="Content\gijgo\modular\timepicker.css" />
-    <Content Include="Content\gijgo\modular\timepicker.min.css" />
-    <Content Include="Content\gijgo\modular\tree.css" />
-    <Content Include="Content\gijgo\modular\tree.min.css" />
     <Content Include="Content\images\dice-00.png" />
     <Content Include="Content\images\dice-01.png" />
     <Content Include="Content\images\dice-02.png" />
@@ -346,47 +333,6 @@
     <Content Include="Content\js\site.js" />
     <Content Include="Content\js\site.min.js" />
     <Content Include="Content\PagedList.css" />
-    <Content Include="Content\themes\base\accordion.css" />
-    <Content Include="Content\themes\base\all.css" />
-    <Content Include="Content\themes\base\autocomplete.css" />
-    <Content Include="Content\themes\base\base.css" />
-    <Content Include="Content\themes\base\button.css" />
-    <Content Include="Content\themes\base\core.css" />
-    <Content Include="Content\themes\base\datepicker.css" />
-    <Content Include="Content\themes\base\dialog.css" />
-    <Content Include="Content\themes\base\draggable.css" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
-    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Content\themes\base\jquery-ui.css" />
-    <Content Include="Content\themes\base\jquery-ui.min.css" />
-    <Content Include="Content\themes\base\menu.css" />
-    <Content Include="Content\themes\base\progressbar.css" />
-    <Content Include="Content\themes\base\resizable.css" />
-    <Content Include="Content\themes\base\selectable.css" />
-    <Content Include="Content\themes\base\selectmenu.css" />
-    <Content Include="Content\themes\base\slider.css" />
-    <Content Include="Content\themes\base\sortable.css" />
-    <Content Include="Content\themes\base\spinner.css" />
-    <Content Include="Content\themes\base\tabs.css" />
-    <Content Include="Content\themes\base\theme.css" />
-    <Content Include="Content\themes\base\tooltip.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\css\Site.css" />
@@ -394,8 +340,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Scripts\bootstrap-datepicker.js" />
-    <Content Include="Scripts\bootstrap-datepicker.min.js" />
     <Content Include="Content\css\bootstrap.min.css.map" />
     <Content Include="Content\css\bootstrap.css.map" />
     <Content Include="Content\css\bootstrap-reboot.min.css.map" />
@@ -742,9 +686,6 @@
     <Content Include="Content\css\bootstrap-datepicker3.css.map" />
     <Content Include="Content\css\bootstrap-datepicker.standalone.css.map" />
     <Content Include="Content\css\bootstrap-datepicker.css.map" />
-    <Content Include="Content\gijgo\fonts\gijgo-material.woff" />
-    <Content Include="Content\gijgo\fonts\gijgo-material.ttf" />
-    <Content Include="Content\gijgo\fonts\gijgo-material.eot" />
     <Content Include="App_Data\db\Authentication.db" />
     <Content Include="App_Data\db\Mahjong.db" />
     <None Include="Properties\PublishProfiles\Dev.pubxml" />
@@ -2888,142 +2829,16 @@
     <Content Include="Scripts\highcharts\7.1.2\css\annotations\popup.scss" />
     <None Include="Properties\PublishProfiles\UAT.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
-    <Content Include="Scripts\gijgo\combined\gijgo.js" />
-    <Content Include="Scripts\gijgo\combined\gijgo.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.bg-bg.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.bg-bg.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.de-de.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.de-de.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.es-es.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.es-es.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.fr-fr.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.fr-fr.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.it-it.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.it-it.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.pt-br.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.pt-br.min.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.ru-ru.js" />
-    <Content Include="Scripts\gijgo\combined\messages\messages.ru-ru.min.js" />
-    <Content Include="Scripts\gijgo\modular\checkbox.js" />
-    <Content Include="Scripts\gijgo\modular\checkbox.min.js" />
-    <Content Include="Scripts\gijgo\modular\core.js" />
-    <Content Include="Scripts\gijgo\modular\core.min.js" />
-    <Content Include="Scripts\gijgo\modular\datepicker.js" />
-    <Content Include="Scripts\gijgo\modular\datepicker.min.js" />
-    <Content Include="Scripts\gijgo\modular\datetimepicker.js" />
-    <Content Include="Scripts\gijgo\modular\datetimepicker.min.js" />
-    <Content Include="Scripts\gijgo\modular\dialog.js" />
-    <Content Include="Scripts\gijgo\modular\dialog.min.js" />
-    <Content Include="Scripts\gijgo\modular\draggable.js" />
-    <Content Include="Scripts\gijgo\modular\draggable.min.js" />
-    <Content Include="Scripts\gijgo\modular\dropdown.js" />
-    <Content Include="Scripts\gijgo\modular\dropdown.min.js" />
-    <Content Include="Scripts\gijgo\modular\droppable.js" />
-    <Content Include="Scripts\gijgo\modular\droppable.min.js" />
-    <Content Include="Scripts\gijgo\modular\editor.js" />
-    <Content Include="Scripts\gijgo\modular\editor.min.js" />
-    <Content Include="Scripts\gijgo\modular\grid.js" />
-    <Content Include="Scripts\gijgo\modular\grid.min.js" />
-    <Content Include="Scripts\gijgo\modular\slider.js" />
-    <Content Include="Scripts\gijgo\modular\slider.min.js" />
-    <Content Include="Scripts\gijgo\modular\timepicker.js" />
-    <Content Include="Scripts\gijgo\modular\timepicker.min.js" />
-    <Content Include="Scripts\gijgo\modular\tree.js" />
-    <Content Include="Scripts\gijgo\modular\tree.min.js" />
     <Content Include="Scripts\highcharts\7.1.2\themes\sunset.src.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
-    <Content Include="Scripts\jquery-ui-1.12.1.js" />
-    <Content Include="Scripts\jquery-ui-1.12.1.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker-en-CA.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ar-tn.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ar.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.az.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.bg.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.bn.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.br.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.bs.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ca.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.cs.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.cy.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.da.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.de.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.el.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.en-AU.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.en-CA.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.en-GB.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.en-IE.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.en-NZ.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.en-ZA.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.eo.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.es.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.et.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.eu.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.fa.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.fi.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.fo.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.fr-CH.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.fr.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.gl.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.he.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.hi.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.hr.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.hu.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.hy.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.id.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.is.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.it-CH.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.it.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ja.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ka.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.kh.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.kk.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.km.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ko.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.kr.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.lt.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.lv.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.me.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.mk.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.mn.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ms.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.nl-BE.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.nl.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.no.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.oc.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.pl.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.pt-BR.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.pt.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ro.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.rs-latin.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.rs.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ru.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.si.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sk.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sl.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sq.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sr-latin.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sr.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sv.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.sw.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.ta.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.tg.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.th.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.tk.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.tr.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.uk.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.uz-cyrl.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.uz-latn.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.vi.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.zh-CN.min.js" />
-    <Content Include="Scripts\locales\bootstrap-datepicker.zh-TW.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\popper-utils.js" />
     <Content Include="Scripts\popper-utils.min.js" />
@@ -3192,10 +3007,20 @@
     <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.20.0\build\Microsoft.ApplicationInsights.DependencyCollector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.20.0\build\Microsoft.ApplicationInsights.DependencyCollector.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.20.0\build\Microsoft.ApplicationInsights.PerfCounterCollector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.20.0\build\Microsoft.ApplicationInsights.PerfCounterCollector.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.WindowsServer.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ApplicationInsights.Web.2.20.0\build\Microsoft.ApplicationInsights.Web.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ApplicationInsights.Web.2.20.0\build\Microsoft.ApplicationInsights.Web.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
   <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <Import Project="..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.20.0\build\Microsoft.ApplicationInsights.DependencyCollector.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.20.0\build\Microsoft.ApplicationInsights.DependencyCollector.targets')" />
+  <Import Project="..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.20.0\build\Microsoft.ApplicationInsights.PerfCounterCollector.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.20.0\build\Microsoft.ApplicationInsights.PerfCounterCollector.targets')" />
+  <Import Project="..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.targets')" />
+  <Import Project="..\packages\Microsoft.ApplicationInsights.WindowsServer.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.WindowsServer.2.20.0\build\Microsoft.ApplicationInsights.WindowsServer.targets')" />
+  <Import Project="..\packages\Microsoft.ApplicationInsights.Web.2.20.0\build\Microsoft.ApplicationInsights.Web.targets" Condition="Exists('..\packages\Microsoft.ApplicationInsights.Web.2.20.0\build\Microsoft.ApplicationInsights.Web.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
