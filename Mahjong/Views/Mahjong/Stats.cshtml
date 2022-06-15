@@ -39,19 +39,20 @@
             border-right: 4px solid #dee2e6 !important;
         }
 
-        .nowrap-header{
+        .nowrap-header {
             white-space: nowrap;
-            text-align:center !important;
+            text-align: center !important;
         }
     </style>
 }
 
 @section scripts{
-    @Scripts.Render("~/bundles/highcharts")
-    <script src="~/Scripts/highcharts/7.1.2/modules/sankey.js"></script>
-    <script src="~/Scripts/highcharts/7.1.2/modules/dependency-wheel.js"></script>
-    <script src="~/Scripts/highcharts/7.1.2/modules/export-data.js"></script>
-    <script src="~/Scripts/highcharts/7.1.2/modules/accessibility.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/sankey.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/dependency-wheel.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/accessibility.js"></script>
     <!--Font Awesome-->
     <link rel="stylesheet" href="~/Scripts/fontawesome/css/all.min.css">
     <!-- DataTables -->
@@ -69,7 +70,7 @@
             "searching": false,
             "info": false,
             "fixedColumns": true,
-            
+
         };
         $(document).ready(function () {
             $('.highcharts-credits').remove();
@@ -526,7 +527,7 @@
                                 }
                             },
                             Series = new List<Series>
-                                    {
+                                                    {
                                 new DependencywheelSeries
                                 {
                                     Keys = {"from", "to", "weight"},
@@ -534,7 +535,7 @@
                                     Data = (List<DependencywheelSeriesData>)ViewData["cashFlowData"]
                                 }
                             },
-                            Exporting = new Exporting { Enabled = false }
+                            Exporting = new Exporting { Enabled = true }
                         };
 
                         chartOptions.ID = "chart";

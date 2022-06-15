@@ -149,7 +149,7 @@
                                 }
                             },
                             YAxis = new List<YAxis>
-                                                    {
+                                                                {
                                 new YAxis
                                 {
                                     Title = new YAxisTitle
@@ -175,7 +175,7 @@
                                 }
                             },
                             Series = (List<Series>)ViewData["hc_series"],
-                            Exporting = new Exporting { Enabled = false }
+                            Exporting = new Exporting { Enabled = true }
                         };
 
                         chartOptions.ID = "chart";
@@ -441,7 +441,11 @@
 </style>
 
 @section scripts{
-    @Scripts.Render("~/bundles/highcharts")
+    <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script type="text/javascript">
         Highcharts.setOptions({
             lang: {

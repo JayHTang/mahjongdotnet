@@ -19,22 +19,10 @@ namespace Mahjong
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                         "~/Scripts/modernizr-*"));
 
-            bundles.Add(new Bundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js",
-                      "~/Scripts/respond.js"));
-
             bundles.Add(new StyleBundle("~/Content/styles").Include(
                       "~/Content/css/bootstrap.css",
                       "~/Content/css/site.css",
-                      "~/Content/css/bootstrap-datepicker3.standalone.css",
                       "~/Content/PagedList.css"));
-
-            bundles.Add(new ScriptBundle("~/bundles/highcharts").Include(
-                      "~/Scripts/highcharts/7.1.2/highcharts.js",
-                      "~/Scripts/highcharts/7.1.2/highcharts-more.js",
-                      "~/Scripts/highcharts/7.1.2/modules/data.js",
-                      "~/Scripts/highcharts/7.1.2/modules/exporting.js",
-                      "~/Scripts/highcharts/7.1.2/modules/drilldown.js"));
 
             BundleTable.EnableOptimizations = true;
 
