@@ -8,6 +8,7 @@
     @Scripts.Render("~/bundles/modernizr")
     @RenderSection("headScripts", required: false)
     @RenderSection("css", required: false)
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
 </head>
 
 <body>
@@ -16,7 +17,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand" href="@Url.Action("Stats","Mahjong")">上海麻将</a>
-        
+
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
@@ -31,7 +32,7 @@
                 <li class="nav-item"> @Html.ActionLink("排行榜", "LeaderBoard", "Mahjong", null, new { @class = "nav-link" })</li>
                 <li class="nav-item"> @Html.ActionLink("数据", "Stats", "Mahjong", new { id = 0 }, new { @class = "nav-link" })</li>
                 <li class="nav-item"> @Html.ActionLink("纪录", "Records", "Mahjong", null, new { @class = "nav-link" })</li>
-                @if (User.IsInRole("Administrator")) 
+                @if (User.IsInRole("Administrator"))
                 {
                     <li class="nav-item">@Html.ActionLink("系统设置", "Index", "Admin", null, new { @class = "nav-link" })</li>
                 }
@@ -47,9 +48,8 @@
             <p>&copy; @DateTime.Now.Year - Jay Tang</p>
         </footer>
     </div>
-
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>
