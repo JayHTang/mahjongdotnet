@@ -14,21 +14,6 @@
 
 @section css{
     <style>
-        .scroller {
-            margin-left: 110px;
-            overflow-x: scroll;
-            overflow-y: visible;
-            padding-bottom: 5px;
-            width: auto;
-        }
-
-        .sticky-col {
-            left: 30px;
-            position: absolute;
-            top: auto;
-            width: 110px;
-        }
-
         td {
             white-space: nowrap
         }
@@ -56,10 +41,8 @@
 
         .nowrap-header{
             white-space: nowrap;
-            text-align:center;
+            text-align:center !important;
         }
-
-
     </style>
 }
 
@@ -72,30 +55,21 @@
     <!--Font Awesome-->
     <link rel="stylesheet" href="~/Scripts/fontawesome/css/all.min.css">
     <!-- DataTables -->
-    <link rel="stylesheet" type="text/css" href="~/Scripts/datatables/DataTables-1.10.18/css/dataTables.foundation.min.css" />
-    <script type="text/javascript" src="~/Scripts/datatables/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="~/Scripts/datatables/DataTables-1.10.18/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" />
+    <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
     <!-- FixedColumn-->
-    <link rel="stylesheet" type="text/css" href="~/Scripts/datatables/FixedColumns-3.2.5/css/fixedColumns.bootstrap4.min.css" />
-    <script type="text/javascript" src="~/Scripts/datatables/FixedColumns-3.2.5/js/dataTables.fixedColumns.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/4.1.0/css/fixedColumns.bootstrap5.min.css" />
+    <script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
 
-    <script type="text/javascript">
-        $(window).on("load", function () {
-            var $th = $(".table-scroller th:nth-child(2)");
-            var $stickyth = $(".table-scroller th.sticky-col");
-            var height = $th.height();
-            var paddingtop = height - 11;
-            $stickyth.height(height);
-            $stickyth.css("padding-top", paddingtop);
-        });
-    </script>
     <script>
         dtConfig = {
             "scrollX": true,
             "paging": false,
             "searching": false,
             "info": false,
-            "fixedColumns": true
+            "fixedColumns": true,
+            
         };
         $(document).ready(function () {
             $('.highcharts-credits').remove();
