@@ -1,0 +1,1 @@
+﻿SELECT * FROM game where finished = 0
