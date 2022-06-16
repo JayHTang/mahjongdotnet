@@ -1,0 +1,1 @@
+﻿SELECT * FROM game WHERE prev_game_id = @gameId

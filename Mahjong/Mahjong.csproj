@@ -337,6 +337,7 @@
     <Content Include="Scripts\mahjong-game-validator.js" />
     <Content Include="SQL\getDiceRolled.sql" />
     <Content Include="SQL\getDiceRolledByPlayer.sql" />
+    <Content Include="SQL\getNextGame.sql" />
     <Content Include="SQL\getGamesUnfinished.sql" />
     <Content Include="SQL\getHighestWinnings.sql" />
     <Content Include="SQL\getNumOfRoundsPlayed.sql" />

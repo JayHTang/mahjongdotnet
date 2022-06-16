@@ -200,6 +200,15 @@ namespace Mahjong {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SELECT * FROM game WHERE prev_game_id = @gameId.
+        /// </summary>
+        internal static string getNextGame {
+            get {
+                return ResourceManager.GetString("getNextGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT Sum(t.numOfRounds) AS roundCount, 
         ///       Max(t.lastPlayed)     AS lastPlayed
         ///FROM   (SELECT g.id         AS game_id, 

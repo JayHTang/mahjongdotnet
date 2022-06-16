@@ -87,6 +87,10 @@ namespace Mahjong.Controllers
         [HttpGet]
         public ActionResult Game(int gameId)
         {
+            int lastGameId = GetLastGame(gameId);
+            if (lastGameId != gameId)
+                return RedirectToAction("Game", new { gameId = lastGameId });
+
             ViewData["gameId"] = gameId;
             DataRow game = dbUtility.Read(sqlServer, SQL.getGame, new DbParameter("@gameId", gameId)).Rows[0];
             int player1Id = Convert.ToInt32(game["player1_id"]);
@@ -258,6 +262,8 @@ namespace Mahjong.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Game(int gameId, Result result)
         {
+            gameId = GetLastGame(gameId);
+
             if (ModelState.IsValid)
             {
                 DataRow game = dbUtility.Read(sqlServer, SQL.getGame, new DbParameter("@gameId", gameId)).Rows[0];
@@ -1985,6 +1991,18 @@ namespace Mahjong.Controllers
                 roundInfo.Dice = $"{playerBook[Convert.ToInt32(dr["player_id"])]} &nbsp;-&nbsp;<img src=\"/Content/images/dice-0{Convert.ToInt32(dr["dice1"])}.png\" style=\"height:1.5em;\"/> <img src=\"/Content/images/dice-0{Convert.ToInt32(dr["dice2"])}.png\" style=\"height:1.5em;\"/>";
             }
             return roundInfo;
+        }
+
+        private int GetLastGame(int gameId)
+        {
+            // get the last game in the chain
+            DataTable dt = dbUtility.Read(sqlServer, SQL.getNextGame, new DbParameter("@gameId", gameId));
+            while (dt.Rows.Count > 0)
+            {
+                gameId = Convert.ToInt32(dt.Rows[0]["id"]);
+                dt = dbUtility.Read(sqlServer, SQL.getNextGame, new DbParameter("@gameId", gameId));
+            }
+            return gameId;
         }
 
         private void EndStreaks(Dictionary<int, Dictionary<int, RoundRecord>> recordBook, Dictionary<int, StreakInfo> streaks, Dictionary<int, string> playerBook, int gameId, int endPlayerId = -1)
