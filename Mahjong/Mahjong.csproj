@@ -288,6 +288,8 @@
     <Compile Include="Models\Mahjong\Round.cs" />
     <Compile Include="Models\Mahjong\RoundResult.cs" />
     <Compile Include="Models\Mahjong\Stat.cs" />
+    <Compile Include="Models\Mahjong\RoundRecord.cs" />
+    <Compile Include="Models\Mahjong\StreakInfo.cs" />
     <Compile Include="Models\Mahjong\WinningRecord.cs" />
     <Compile Include="Models\UserRoles.cs" />
     <Compile Include="SQL.Designer.cs">
@@ -335,6 +337,7 @@
     <Content Include="Scripts\mahjong-game-validator.js" />
     <Content Include="SQL\getDiceRolled.sql" />
     <Content Include="SQL\getDiceRolledByPlayer.sql" />
+    <Content Include="SQL\getGamesUnfinished.sql" />
     <Content Include="SQL\getHighestWinnings.sql" />
     <Content Include="SQL\getNumOfRoundsPlayed.sql" />
     <Content Include="SQL\getGames.sql" />
@@ -407,6 +410,7 @@
     <Content Include="Views\Admin\EditUser.cshtml" />
     <Content Include="Views\Admin\EditRoles.cshtml" />
     <Content Include="Views\Mahjong\Records.cshtml" />
+    <Content Include="Views\Mahjong\RoundRecords.cshtml" />
     <None Include="Web.UAT.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -138,6 +138,15 @@ namespace Mahjong {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SELECT * FROM game where finished = 0.
+        /// </summary>
+        internal static string getGamesUnfinished {
+            get {
+                return ResourceManager.GetString("getGamesUnfinished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SELECT * FROM hand WHERE id=@handId.
         /// </summary>
         internal static string getHand {

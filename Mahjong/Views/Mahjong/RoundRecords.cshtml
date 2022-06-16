@@ -1,0 +1,49 @@
+﻿@using Mahjong.Models.Mahjong
+@{
+    ViewBag.Title = "胜负纪录";
+    List<RoundRecord> winningStreakRecords = ViewBag.winningStreakRecords;
+}
+
+@section css{
+    <style>
+        .right {
+            text-align: right;
+        }
+    </style>
+}
+
+<div class="row">
+    <div class="col-xl-3">
+        <h2>连胜纪录</h2>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>玩家</th>
+                    <th>连胜数</th>
+                    <th class="right">赢钱</th>
+                    <th class="right">日期</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (RoundRecord r in winningStreakRecords)
+                {
+                    <tr>
+                        <td rowspan="@r.Payouts.Count">@r.Rank</td>
+                        <td rowspan="@r.Payouts.Count">@r.PlayerName</td>
+                        <td rowspan="@r.Payouts.Count">@r.Count</td>
+                        <td class="right">@r.Payouts[0].Cashflow.ToString("$#,##0.00")</td>
+                        <td class="right">@r.Payouts[0].Date</td>
+                    </tr>
+                    for (int i = 1; i < r.Payouts.Count; i++)
+                    {
+                        <tr>
+                            <td class="right">@r.Payouts[i].Cashflow.ToString("$#,##0.00")</td>
+                            <td class="right">@r.Payouts[i].Date</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1166,6 +1166,170 @@ namespace Mahjong.Controllers
             return View();
         }
 
+        public ActionResult RoundRecords()
+        {
+            Dictionary<int, string> playerBook = GetPlayerBook();
+            DataTable dt = dbUtility.Read(sqlServer, SQL.getRoundsWithGame, new DbParameter("@game_id", DbUtility.Zero));
+
+            // no PriorityQueue in .net framework :(
+            // have to sort at the end
+            Dictionary<int, Dictionary<int, RoundRecord>> winningStreak = new();
+
+            // get all round details
+            Dictionary<int, List<RoundDetail>> allRoundDetails = new();
+            foreach (DataRow r in dbUtility.Read(sqlServer, SQL.getRoundDetail, new DbParameter("@roundId", DbUtility.Zero)).Rows)
+            {
+                RoundDetail roundDetail = GetRoundDetailFromDataRow(r);
+                if (!allRoundDetails.ContainsKey(roundDetail.RoundId))
+                {
+                    allRoundDetails.Add(roundDetail.RoundId, new List<RoundDetail>());
+                }
+                allRoundDetails[roundDetail.RoundId].Add(roundDetail);
+            }
+
+            Dictionary<int, StreakInfo> winners = new();
+            int gameId = 0;
+            int count = 0;
+            foreach(DataRow dr in dt.Rows)
+            {
+                count++;
+                if (Skip(Convert.ToInt32(dr["game_id"]), Convert.ToDecimal(dr["hua"])))
+                {
+                    continue;
+                }
+                Round round = GetRoundFromDataRow(dr);
+                DateTime created = Convert.ToDateTime(dr["created1"]);
+                if (round.GameId != gameId)
+                {
+                    if (dr["prev_game_id"] == DBNull.Value)
+                    {
+                        // no substitution happened, this is another game
+                        EndStreaks(winningStreak, winners, playerBook, round.GameId);
+                    }
+                    else if (Convert.ToInt32(dr["prev_game_id"]) != gameId)
+                    {
+                        // there is substitution
+                        // not the same game, shouldn't really happen
+                        EndStreaks(winningStreak, winners, playerBook, round.GameId);
+                    }
+                    gameId = round.GameId;
+                }
+
+                if (allRoundDetails[round.Id][0].WinnerId == -1)
+                    continue; //荒庄
+
+                // find winner
+                HashSet<int> roundWinners = new();
+                foreach(RoundDetail rd in allRoundDetails[round.Id])
+                {
+                    roundWinners.Add(rd.WinnerId);
+                }
+
+                int[] winningPlayers = winners.Keys.ToArray();
+                foreach (int playerId in winningPlayers)
+                {
+                    if (!roundWinners.Contains(playerId))
+                    {
+                        // streak ends
+                        EndStreaks(winningStreak, winners, playerBook, gameId, playerId);
+                    }
+                }
+                foreach(int playerId in roundWinners)
+                {
+                    decimal cashflow = Convert.ToDecimal(dr[FindDelta(dr, playerId)]);
+                    if (winners.ContainsKey(playerId))
+                    {
+                        // streak continues
+                        winners[playerId].Count++;
+                        winners[playerId].Cashflow += cashflow;
+                    }
+                    else
+                    {
+                        // streak starts
+                        winners.Add(playerId, new StreakInfo() { Count = 1, Cashflow = cashflow });
+                    }
+                }
+
+                if (count == dt.Rows.Count)
+                {
+                    EndStreaks(winningStreak, winners, playerBook, round.GameId);
+                }
+            }
+
+            // consolidate
+            List<RoundRecord> winningStreakRecords = new();
+            foreach(var v in winningStreak.Values)
+            {
+                foreach(var r in v.Values)
+                {
+                    winningStreakRecords.Add(r);
+                }
+            }
+
+            // sort
+            winningStreakRecords = winningStreakRecords.OrderByDescending(s => s.Count).ThenBy(s => s.PlayerName).ToList();
+
+            int n = 10;
+            while(n < winningStreakRecords.Count())
+            {
+                if (winningStreakRecords[n].Count != winningStreakRecords[n - 1].Count)
+                    break;
+                n++;
+            }
+            if(winningStreakRecords.Count > 0)
+            {
+                winningStreakRecords[0].Rank = 1;
+                for (int i = 1; i < winningStreakRecords.Count(); i++)
+                {
+                    if (winningStreakRecords[i].Count == winningStreakRecords[i - 1].Count)
+                    {
+                        winningStreakRecords[i].Rank = winningStreakRecords[i - 1].Rank;
+                    }
+                    else
+                    {
+                        winningStreakRecords[i].Rank = i + 1;
+                    }
+                }
+            }
+
+            winningStreakRecords = winningStreakRecords.Take(n).ToList();
+
+            // get game info
+            DataTable dt2 = dbUtility.Read(sqlServer, SQL.getGames);
+            Dictionary<int, string> gameDates = new();
+            foreach(DataRow dr in dt2.Rows)
+            {
+                int id = Convert.ToInt32(dr["id"]);
+                if (Skip(id, Convert.ToDecimal(dr["hua"])))
+                {
+                    continue;
+                }
+                int prev_id = dr["prev_game_id"] == DBNull.Value ? -1 : Convert.ToInt32(dr["prev_game_id"]);
+                if (gameDates.ContainsKey(prev_id))
+                {
+                    gameDates.Add(id, gameDates[prev_id]);
+                }
+                else
+                {
+                    gameDates.Add(id, Convert.ToDateTime(dr["created"]).ToShortDateString());
+                }
+            }
+
+            // get dates
+            foreach(RoundRecord roundRecord in winningStreakRecords)
+            {
+                foreach(GamePayout payout in roundRecord.Payouts)
+                {
+                    payout.Date = gameDates[payout.GameId];
+                }
+                roundRecord.Payouts.Sort((p1, p2) => Convert.ToInt32(p2.Cashflow * 100 - p1.Cashflow * 100));
+            }
+
+            ViewBag.winningStreakRecords = winningStreakRecords.OrderByDescending(s => s.Count).ThenByDescending(s => s.Payouts.Count).ThenByDescending(s => s.Payouts.Sum(p => p.Cashflow)).ThenBy(s => s.PlayerName).ToList();
+
+            return View();
+        }
+
         [Authorize(Roles = "Administrator, Mahjong")]
         public ActionResult Huangfan(int gameId, int count)
         {
@@ -1821,6 +1985,45 @@ namespace Mahjong.Controllers
                 roundInfo.Dice = $"{playerBook[Convert.ToInt32(dr["player_id"])]} &nbsp;-&nbsp;<img src=\"/Content/images/dice-0{Convert.ToInt32(dr["dice1"])}.png\" style=\"height:1.5em;\"/> <img src=\"/Content/images/dice-0{Convert.ToInt32(dr["dice2"])}.png\" style=\"height:1.5em;\"/>";
             }
             return roundInfo;
+        }
+
+        private void EndStreaks(Dictionary<int, Dictionary<int, RoundRecord>> recordBook, Dictionary<int, StreakInfo> streaks, Dictionary<int, string> playerBook, int gameId, int endPlayerId = -1)
+        {
+            int[] ids = endPlayerId == -1 ? streaks.Keys.ToArray() : new int[] { endPlayerId };
+
+            foreach (int playerId in ids)
+            {
+                int count = streaks[playerId].Count;
+                if (count >= 3)
+                {
+                    // only save 3peat or better
+                    GamePayout payout = new GamePayout() {
+                        GameId = gameId,
+                        Cashflow = streaks[playerId].Cashflow
+                    };
+
+                    if (recordBook.ContainsKey(playerId))
+                    {
+                        if (recordBook[playerId].ContainsKey(count))
+                        {
+                            recordBook[playerId][count].Payouts.Add(payout);
+                        }
+                        else
+                        {
+                            recordBook[playerId].Add(count, new RoundRecord() { Payouts = new List<GamePayout>() { payout }, PlayerName = playerBook[playerId], Count = streaks[playerId].Count });
+                        }
+                    }
+                    else
+                    {
+                        Dictionary<int, RoundRecord> record = new()
+                        {
+                            { count, new RoundRecord() { Payouts = new List<GamePayout>() { payout }, PlayerName = playerBook[playerId], Count = streaks[playerId].Count } }
+                        };
+                        recordBook[playerId] = record;
+                    }
+                }
+                streaks.Remove(playerId);
+            }
         }
 
         private void UpdateRound(int roundId)
