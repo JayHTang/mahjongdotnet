@@ -1180,6 +1180,31 @@ namespace Mahjong.Controllers
             // no PriorityQueue in .net framework :(
             // have to sort at the end
             Dictionary<int, Dictionary<int, RoundRecord>> winningStreak = new();
+            Dictionary<int, Dictionary<int, RoundRecord>> zimoStreak = new();
+            Dictionary<int, Dictionary<int, RoundRecord>> losingStreak = new();
+            Dictionary<int, Dictionary<int, RoundRecord>> dianpaoStreak = new();
+
+            #region Get game and round info
+            // get game info
+            DataTable dt2 = dbUtility.Read(sqlServer, SQL.getGames);
+            Dictionary<int, string> gameDates = new();
+            foreach (DataRow dr in dt2.Rows)
+            {
+                int id = Convert.ToInt32(dr["id"]);
+                if (Skip(id, Convert.ToDecimal(dr["hua"])))
+                {
+                    continue;
+                }
+                int prev_id = dr["prev_game_id"] == DBNull.Value ? -1 : Convert.ToInt32(dr["prev_game_id"]);
+                if (gameDates.ContainsKey(prev_id))
+                {
+                    gameDates.Add(id, gameDates[prev_id]);
+                }
+                else
+                {
+                    gameDates.Add(id, Convert.ToDateTime(dr["created"]).ToShortDateString());
+                }
+            }
 
             // get all round details
             Dictionary<int, List<RoundDetail>> allRoundDetails = new();
@@ -1192,8 +1217,12 @@ namespace Mahjong.Controllers
                 }
                 allRoundDetails[roundDetail.RoundId].Add(roundDetail);
             }
+            #endregion
 
             Dictionary<int, StreakInfo> winners = new();
+            Dictionary<int, StreakInfo> zimos = new();
+            Dictionary<int, StreakInfo> losers = new();
+            Dictionary<int, StreakInfo> dianpaos = new();
             int gameId = 0;
             int count = 0;
             foreach(DataRow dr in dt.Rows)
@@ -1211,12 +1240,18 @@ namespace Mahjong.Controllers
                     {
                         // no substitution happened, this is another game
                         EndStreaks(winningStreak, winners, playerBook, round.GameId);
+                        EndStreaks(zimoStreak, zimos, playerBook, round.GameId);
+                        EndStreaks(losingStreak, losers, playerBook, round.GameId);
+                        EndStreaks(dianpaoStreak, dianpaos, playerBook, round.GameId);
                     }
                     else if (Convert.ToInt32(dr["prev_game_id"]) != gameId)
                     {
                         // there is substitution
                         // not the same game, shouldn't really happen
                         EndStreaks(winningStreak, winners, playerBook, round.GameId);
+                        EndStreaks(zimoStreak, zimos, playerBook, round.GameId);
+                        EndStreaks(losingStreak, losers, playerBook, round.GameId);
+                        EndStreaks(dianpaoStreak, dianpaos, playerBook, round.GameId);
                     }
                     gameId = round.GameId;
                 }
@@ -1224,9 +1259,13 @@ namespace Mahjong.Controllers
                 if (allRoundDetails[round.Id][0].WinnerId == -1)
                     continue; //荒庄
 
+                // players in this round
+                int[] playerIds = new int[4] { Convert.ToInt32(dr["player1_id"]), Convert.ToInt32(dr["player2_id"]), Convert.ToInt32(dr["player3_id"]), Convert.ToInt32(dr["player4_id"]) };
+
+                #region winner logic
                 // find winner
                 HashSet<int> roundWinners = new();
-                foreach(RoundDetail rd in allRoundDetails[round.Id])
+                foreach (RoundDetail rd in allRoundDetails[round.Id])
                 {
                     roundWinners.Add(rd.WinnerId);
                 }
@@ -1255,83 +1294,116 @@ namespace Mahjong.Controllers
                         winners.Add(playerId, new StreakInfo() { Count = 1, Cashflow = cashflow });
                     }
                 }
+                #endregion
 
-                if (count == dt.Rows.Count)
+                #region zimo logic
+                // find zimo
+                if (allRoundDetails[round.Id][0].Zimo)
                 {
-                    EndStreaks(winningStreak, winners, playerBook, round.GameId);
-                }
-            }
-
-            // consolidate
-            List<RoundRecord> winningStreakRecords = new();
-            foreach(var v in winningStreak.Values)
-            {
-                foreach(var r in v.Values)
-                {
-                    winningStreakRecords.Add(r);
-                }
-            }
-
-            // sort
-            winningStreakRecords = winningStreakRecords.OrderByDescending(s => s.Count).ThenBy(s => s.PlayerName).ToList();
-
-            int n = 10;
-            while(n < winningStreakRecords.Count())
-            {
-                if (winningStreakRecords[n].Count != winningStreakRecords[n - 1].Count)
-                    break;
-                n++;
-            }
-            if(winningStreakRecords.Count > 0)
-            {
-                winningStreakRecords[0].Rank = 1;
-                for (int i = 1; i < winningStreakRecords.Count(); i++)
-                {
-                    if (winningStreakRecords[i].Count == winningStreakRecords[i - 1].Count)
+                    int roundZimoPlayerId = allRoundDetails[round.Id][0].WinnerId;
+                    decimal cashflow = Convert.ToDecimal(dr[FindDelta(dr, roundZimoPlayerId)]);
+                    if (zimos.ContainsKey(roundZimoPlayerId))
                     {
-                        winningStreakRecords[i].Rank = winningStreakRecords[i - 1].Rank;
+                        // streak continues
+                        zimos[roundZimoPlayerId].Count++;
+                        zimos[roundZimoPlayerId].Cashflow += cashflow;
                     }
                     else
                     {
-                        winningStreakRecords[i].Rank = i + 1;
+                        // previous streak ends
+                        EndStreaks(zimoStreak, zimos, playerBook, gameId);
+
+                        // new streak starts
+                        zimos.Add(roundZimoPlayerId, new StreakInfo() { Count = 1, Cashflow = cashflow });
                     }
-                }
-            }
-
-            winningStreakRecords = winningStreakRecords.Take(n).ToList();
-
-            // get game info
-            DataTable dt2 = dbUtility.Read(sqlServer, SQL.getGames);
-            Dictionary<int, string> gameDates = new();
-            foreach(DataRow dr in dt2.Rows)
-            {
-                int id = Convert.ToInt32(dr["id"]);
-                if (Skip(id, Convert.ToDecimal(dr["hua"])))
-                {
-                    continue;
-                }
-                int prev_id = dr["prev_game_id"] == DBNull.Value ? -1 : Convert.ToInt32(dr["prev_game_id"]);
-                if (gameDates.ContainsKey(prev_id))
-                {
-                    gameDates.Add(id, gameDates[prev_id]);
                 }
                 else
                 {
-                    gameDates.Add(id, Convert.ToDateTime(dr["created"]).ToShortDateString());
+                    // all streak ends
+                    EndStreaks(zimoStreak, zimos, playerBook, gameId);
                 }
-            }
+                #endregion
 
-            // get dates
-            foreach(RoundRecord roundRecord in winningStreakRecords)
-            {
-                foreach(GamePayout payout in roundRecord.Payouts)
+                #region loser logic
+                // find loser
+                Dictionary<int, decimal> roundLosers = new();
+                foreach (int playerId in playerIds)
                 {
-                    payout.Date = gameDates[payout.GameId];
+                    decimal cashflow = -Convert.ToDecimal(dr[FindDelta(dr, playerId)]);
+                    if (cashflow < 0m)
+                    {
+                        // this player loses
+                        roundLosers.Add(playerId, cashflow);
+                    }
                 }
-                roundRecord.Payouts.Sort((p1, p2) => Convert.ToInt32(p2.Cashflow * 100 - p1.Cashflow * 100));
+                
+                int[] losingPlayers = losers.Keys.ToArray();
+                foreach(int playerId in losingPlayers)
+                {
+                    if (!roundLosers.ContainsKey(playerId))
+                    {
+                        // streak ends
+                        EndStreaks(losingStreak, losers, playerBook, gameId, playerId);
+                    }
+                }
+                foreach(int playerId in roundLosers.Keys)
+                {
+                    if (losers.ContainsKey(playerId))
+                    {
+                        // steak continues
+                        losers[playerId].Count++;
+                        losers[playerId].Cashflow += roundLosers[playerId];
+                    }
+                    else
+                    {
+                        // streak starts
+                        losers.Add(playerId, new StreakInfo() { Count = 1, Cashflow = roundLosers[playerId] });
+                    }
+                }
+                #endregion
+
+                #region dianpao logic
+                // find dianpao
+                if (allRoundDetails[round.Id][0].DianpaoId != -1)
+                {
+                    int roundDianpaoPlayerId = allRoundDetails[round.Id][0].DianpaoId;
+                    decimal cashflow = -Convert.ToDecimal(dr[FindDelta(dr, roundDianpaoPlayerId)]);
+                    if (dianpaos.ContainsKey(roundDianpaoPlayerId))
+                    {
+                        // streak continues
+                        dianpaos[roundDianpaoPlayerId].Count++;
+                        dianpaos[roundDianpaoPlayerId].Cashflow += cashflow;
+                    }
+                    else
+                    {
+                        // previous streak ends
+                        EndStreaks(dianpaoStreak, dianpaos, playerBook, gameId);
+
+                        // new streak starts
+                        dianpaos.Add(roundDianpaoPlayerId, new StreakInfo() { Count = 1, Cashflow = cashflow });
+                    }
+                }
+                else
+                {
+                    // all streak ends
+                    EndStreaks(dianpaoStreak, dianpaos, playerBook, gameId);
+                }
+                #endregion
+
+                // streak ends at the last round
+                if (count == dt.Rows.Count)
+                {
+                    EndStreaks(winningStreak, winners, playerBook, round.GameId);
+                    EndStreaks(zimoStreak, zimos, playerBook, round.GameId);
+                    EndStreaks(losingStreak, losers, playerBook, round.GameId);
+                    EndStreaks(dianpaoStreak, dianpaos, playerBook, round.GameId);
+                }
             }
 
-            ViewBag.winningStreakRecords = winningStreakRecords.OrderByDescending(s => s.Count).ThenByDescending(s => s.Payouts.Count).ThenByDescending(s => s.Payouts.Sum(p => p.Cashflow)).ThenBy(s => s.PlayerName).ToList();
+            ViewBag.winningStreakRecords = GetStreakRecords(winningStreak, gameDates, 10);
+            ViewBag.zimoStreakRecords = GetStreakRecords(zimoStreak, gameDates, 10);
+            ViewBag.losingStreakRecords = GetStreakRecords(losingStreak, gameDates, 10);
+            ViewBag.dianpaoStreakRecords = GetStreakRecords(dianpaoStreak, gameDates, 10);
 
             return View();
         }
@@ -2003,6 +2075,62 @@ namespace Mahjong.Controllers
                 dt = dbUtility.Read(sqlServer, SQL.getNextGame, new DbParameter("@gameId", gameId));
             }
             return gameId;
+        }
+
+        private List<RoundRecord> GetStreakRecords(Dictionary<int, Dictionary<int, RoundRecord>> streak, Dictionary<int, string> gameDates, int n)
+        {
+            // consolidate
+            List<RoundRecord> streakRecords = new();
+            foreach (var v in streak.Values)
+            {
+                foreach (var r in v.Values)
+                {
+                    streakRecords.Add(r);
+                }
+            }
+
+            // sort
+            streakRecords = streakRecords.OrderByDescending(s => s.Count).ThenBy(s => s.PlayerName).ToList();
+
+            // increase n because of tied records
+            while (n < streakRecords.Count())
+            {
+                if (streakRecords[n].Count != streakRecords[n - 1].Count)
+                    break;
+                n++;
+            }
+
+            // take the records needed
+            streakRecords = streakRecords.Take(n).ToList();
+
+            // make rank
+            if (streakRecords.Count > 0)
+            {
+                streakRecords[0].Rank = 1;
+                for (int i = 1; i < streakRecords.Count(); i++)
+                {
+                    if (streakRecords[i].Count == streakRecords[i - 1].Count)
+                    {
+                        streakRecords[i].Rank = streakRecords[i - 1].Rank;
+                    }
+                    else
+                    {
+                        streakRecords[i].Rank = i + 1;
+                    }
+                }
+            }
+
+            // get dates
+            foreach (RoundRecord roundRecord in streakRecords)
+            {
+                foreach (GamePayout payout in roundRecord.Payouts)
+                {
+                    payout.Date = gameDates[payout.GameId];
+                }
+                roundRecord.Payouts.Sort((p1, p2) => Convert.ToInt32(p2.Cashflow * 100 - p1.Cashflow * 100));
+            }
+
+            return streakRecords.OrderByDescending(s => s.Count).ThenByDescending(s => s.Payouts.Count).ThenByDescending(s => s.Payouts.Max(p => p.Cashflow)).ThenBy(s => s.PlayerName).ToList();
         }
 
         private void EndStreaks(Dictionary<int, Dictionary<int, RoundRecord>> recordBook, Dictionary<int, StreakInfo> streaks, Dictionary<int, string> playerBook, int gameId, int endPlayerId = -1)

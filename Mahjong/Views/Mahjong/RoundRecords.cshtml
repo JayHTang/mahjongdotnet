@@ -2,6 +2,9 @@
 @{
     ViewBag.Title = "胜负纪录";
     List<RoundRecord> winningStreakRecords = ViewBag.winningStreakRecords;
+    List<RoundRecord> zimoStreakRecords = ViewBag.zimoStreakRecords;
+    List<RoundRecord> losingStreakRecords = ViewBag.losingStreakRecords;
+    List<RoundRecord> dianpaoStreakRecords = ViewBag.dianpaoStreakRecords;
 }
 
 @section css{
@@ -9,13 +12,21 @@
         .right {
             text-align: right;
         }
+
+        tbody:hover,
+        tr.hover,
+        th.hover,
+        td.hover,
+        tr.hoverable:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 }
 
 <div class="row">
     <div class="col-xl-3">
         <h2>连胜纪录</h2>
-        <table class="table table-bordered table-hover">
+        <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>排名</th>
@@ -25,9 +36,9 @@
                     <th class="right">日期</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach (RoundRecord r in winningStreakRecords)
-                {
+            @foreach (RoundRecord r in winningStreakRecords)
+            {
+                <tbody>
                     <tr>
                         <td rowspan="@r.Payouts.Count">@r.Rank</td>
                         <td rowspan="@r.Payouts.Count">@r.PlayerName</td>
@@ -35,15 +46,114 @@
                         <td class="right">@r.Payouts[0].Cashflow.ToString("$#,##0.00")</td>
                         <td class="right">@r.Payouts[0].Date</td>
                     </tr>
-                    for (int i = 1; i < r.Payouts.Count; i++)
+                    @for (int i = 1; i < r.Payouts.Count; i++)
                     {
                         <tr>
                             <td class="right">@r.Payouts[i].Cashflow.ToString("$#,##0.00")</td>
                             <td class="right">@r.Payouts[i].Date</td>
                         </tr>
                     }
-                }
-            </tbody>
+                </tbody>
+            }
+        </table>
+    </div>
+    <div class="col-xl-3">
+        <h2>连续自摸纪录</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>玩家</th>
+                    <th>连续次数</th>
+                    <th class="right">赢钱</th>
+                    <th class="right">日期</th>
+                </tr>
+            </thead>
+            @foreach (RoundRecord r in zimoStreakRecords)
+            {
+                <tbody>
+                    <tr>
+                        <td rowspan="@r.Payouts.Count">@r.Rank</td>
+                        <td rowspan="@r.Payouts.Count">@r.PlayerName</td>
+                        <td rowspan="@r.Payouts.Count">@r.Count</td>
+                        <td class="right">@r.Payouts[0].Cashflow.ToString("$#,##0.00")</td>
+                        <td class="right">@r.Payouts[0].Date</td>
+                    </tr>
+                    @for (int i = 1; i < r.Payouts.Count; i++)
+                    {
+                        <tr>
+                            <td class="right">@r.Payouts[i].Cashflow.ToString("$#,##0.00")</td>
+                            <td class="right">@r.Payouts[i].Date</td>
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+    <div class="col-xl-3">
+        <h2>连败纪录</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>玩家</th>
+                    <th>连败数</th>
+                    <th class="right">输钱</th>
+                    <th class="right">日期</th>
+                </tr>
+            </thead>
+            @foreach (RoundRecord r in losingStreakRecords)
+            {
+                <tbody>
+                    <tr>
+                        <td rowspan="@r.Payouts.Count">@r.Rank</td>
+                        <td rowspan="@r.Payouts.Count">@r.PlayerName</td>
+                        <td rowspan="@r.Payouts.Count">@r.Count</td>
+                        <td class="right">@r.Payouts[0].Cashflow.ToString("$#,##0.00")</td>
+                        <td class="right">@r.Payouts[0].Date</td>
+                    </tr>
+                    @for (int i = 1; i < r.Payouts.Count; i++)
+                    {
+                        <tr>
+                            <td class="right">@r.Payouts[i].Cashflow.ToString("$#,##0.00")</td>
+                            <td class="right">@r.Payouts[i].Date</td>
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+    <div class="col-xl-3">
+        <h2>连续点炮纪录</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>玩家</th>
+                    <th>连续次数</th>
+                    <th class="right">输钱</th>
+                    <th class="right">日期</th>
+                </tr>
+            </thead>
+            @foreach (RoundRecord r in dianpaoStreakRecords)
+            {
+                <tbody>
+                    <tr>
+                        <td rowspan="@r.Payouts.Count">@r.Rank</td>
+                        <td rowspan="@r.Payouts.Count">@r.PlayerName</td>
+                        <td rowspan="@r.Payouts.Count">@r.Count</td>
+                        <td class="right">@r.Payouts[0].Cashflow.ToString("$#,##0.00")</td>
+                        <td class="right">@r.Payouts[0].Date</td>
+                    </tr>
+                    @for (int i = 1; i < r.Payouts.Count; i++)
+                    {
+                        <tr>
+                            <td class="right">@r.Payouts[i].Cashflow.ToString("$#,##0.00")</td>
+                            <td class="right">@r.Payouts[i].Date</td>
+                        </tr>
+                    }
+                </tbody>
+            }
         </table>
     </div>
 </div>
