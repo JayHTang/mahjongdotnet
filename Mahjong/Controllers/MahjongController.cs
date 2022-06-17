@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Web.Mvc;
 
@@ -625,6 +624,9 @@ namespace Mahjong.Controllers
             Dictionary<int, decimal> playerBalanceSheet = new Dictionary<int, decimal>();
             DateTime begin = DateTime.Parse(ConfigurationManager.AppSettings["mahjong_begin"]);
             List<string> xAxis = new List<string> { begin.ToShortDateString() };
+            Dictionary<int, Dictionary<int, decimal>> playerBalanceSheetByYear = new();
+            Dictionary<int, Dictionary<int, int>> playerRoundCountByYear = new();
+
             foreach (Player player in players)
             {
                 playerBalanceSeriesData.Add(player.Id, new List<SplineSeriesData> { new SplineSeriesData { Y = 0 } });
@@ -653,6 +655,52 @@ namespace Mahjong.Controllers
                         playerBalanceSeriesData[player.Id].Add(new SplineSeriesData { Y = playerBalanceSeriesData[player.Id].Last().Y });
                     }
                 }
+            }
+
+            // by year
+            List<GameHistory> separateGameHistories = GetGameHistory(false);
+            foreach(GameHistory gameHistory in separateGameHistories)
+            {
+                if (Skip(gameHistory.GameId, gameHistory.HuaValue))
+                {
+                    // don't count
+                    continue;
+                }
+
+                if (!playerBalanceSheetByYear.ContainsKey(gameHistory.Start.Year))
+                {
+                    playerBalanceSheetByYear[gameHistory.Start.Year] = new();
+                    playerRoundCountByYear[gameHistory.Start.Year] = new();
+                }
+                foreach (int playerId in gameHistory.Players)
+                {
+                    if (playerBalanceSheetByYear[gameHistory.Start.Year].ContainsKey(playerId))
+                    {
+                        playerBalanceSheetByYear[gameHistory.Start.Year][playerId] += gameHistory.BalanceSheet[playerId];
+                        playerRoundCountByYear[gameHistory.Start.Year][playerId] += gameHistory.NumOfRounds;
+                    }
+                    else
+                    {
+                        playerBalanceSheetByYear[gameHistory.Start.Year][playerId] = gameHistory.BalanceSheet[playerId];
+                        playerRoundCountByYear[gameHistory.Start.Year][playerId] = gameHistory.NumOfRounds;
+                    }
+                }
+            }
+
+            List<int> years = playerBalanceSheetByYear.Keys.ToList();
+            years.Sort((y1, y2) => y2 - y1);
+            Dictionary<int, List<Player>> rankedPlayersByYear = new();
+            foreach (int year in years)
+            {
+                rankedPlayersByYear[year] = new();
+                foreach (Player player in players)
+                {
+                    if (playerBalanceSheetByYear[year].ContainsKey(player.Id))
+                    {
+                        rankedPlayersByYear[year].Add(player);
+                    }
+                }
+                rankedPlayersByYear[year].Sort((p1, p2) => (int)(playerBalanceSheetByYear[year][p2.Id] - playerBalanceSheetByYear[year][p1.Id]));
             }
 
             List<Player> realPlayers = new List<Player>();
@@ -688,6 +736,10 @@ namespace Mahjong.Controllers
             ViewData["series"] = series;
             ViewData["playerRoundCount"] = playerRoundCount;
             ViewData["playerBalanceSheet"] = playerBalanceSheet;
+            ViewData["playerBalanceSheetByYear"] = playerBalanceSheetByYear;
+            ViewData["playerRoundCountByYear"] = playerRoundCountByYear;
+            ViewData["rankedPlayersByYear"] = rankedPlayersByYear;
+            ViewData["years"] = years;
             ViewData["xAxis"] = xAxis;
             ViewData["message"] = GetRealPlayerMessage(gameHistories.First().Start);
 
@@ -1860,7 +1912,7 @@ namespace Mahjong.Controllers
             dbUtility.Insert(sqlServer, SQL.updateGameFinishGame, new DbParameter("@gameId", gameId));
         }
 
-        private List<GameHistory> GetGameHistory()
+        private List<GameHistory> GetGameHistory(bool combineGameWithSubs = true)
         {
             List<GameHistory> gameHistories = new List<GameHistory>();
             DataTable dt = dbUtility.Read(sqlServer, SQL.getGameHistoryInfo);
@@ -1921,7 +1973,7 @@ namespace Mahjong.Controllers
                     prevGameId = Convert.ToInt32(dr["prev_game_id"]);
                 }
 
-                while (goForPrevious)
+                while (combineGameWithSubs && goForPrevious)
                 {
                     dr = historyTable[prevGameId];
                     historyTable.Remove(prevGameId);

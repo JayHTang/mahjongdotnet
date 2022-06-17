@@ -4,9 +4,13 @@
 
 @{
     ViewBag.Title = "排行榜";
-    var playerBalanceSheet = (Dictionary<int, Decimal>)ViewData["playerBalanceSheet"];
+    var playerBalanceSheet = (Dictionary<int, decimal>)ViewData["playerBalanceSheet"];
     var players = (List<Player>)ViewData["players"];
     var playerRoundCount = (Dictionary<int, int>)ViewData["playerRoundCount"];
+    var playerBalanceSheetByYear = (Dictionary<int, Dictionary<int, decimal>>)ViewData["playerBalanceSheetByYear"];
+    var playerRoundCountByYear = (Dictionary<int, Dictionary<int, int>>)ViewData["playerRoundCountByYear"];
+    var years = (List<int>)ViewData["years"];
+    var rankedPlayersByYear = (Dictionary<int, List<Player>>)ViewData["rankedPlayersByYear"];
 }
 
 @section scripts{
@@ -27,6 +31,26 @@
             $('.highcharts-credits').remove();
         });
     </script>
+}
+
+@section css{
+    <style>
+        .border-right-primary {
+            border-right: 2px solid #dee2e6 !important;
+        }
+        .border-left-primary {
+            border-left: 2px solid #dee2e6 !important;
+        }
+
+        .nowrap-header {
+            white-space: nowrap;
+            text-align: center !important;
+        }
+
+        .borderless {
+            border: 0px !important;
+        }
+    </style>
 }
 
 @{
@@ -82,7 +106,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-xl-3">
-            <h2>排行榜</h2>
+            <h2>总排行榜</h2>
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -111,6 +135,38 @@
             @Html.Raw(renderer.RenderHtml())
         </div>
     </div>
+    <h2>年度排行榜</h2>
+    <div class="row">
+        @foreach (int year in years)
+        {
+            <div class="col-l-3">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th colspan="4" class="nowrap-header border-right-primary border-left-primary">@year</th>
+                        </tr>
+                        <tr>
+                            <th class="border-left-primary">排名</th>
+                            <th>玩家</th>
+                            <th>盈亏</th>
+                            <th class="border-right-primary">盘数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < rankedPlayersByYear[year].Count; i++)
+                        {
+                            var player = rankedPlayersByYear[year][i];
+                            <tr>
+                                <td class="border-left-primary">@(i + 1)</td>
+                                <td>@player.Name</td>
+                                <td align="right">@playerBalanceSheetByYear[year][player.Id].ToString("$#,##0.00")</td>
+                                <td align="right" class="border-right-primary">@playerRoundCountByYear[year][player.Id]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 </div>
-
 
