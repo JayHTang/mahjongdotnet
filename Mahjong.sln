@@ -7,11 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mahjong", "Mahjong\Mahjong.
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Azure|Any CPU = Azure|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 		UAT|Any CPU = UAT|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.Azure|Any CPU.ActiveCfg = Azure|Any CPU
+		{6A153C29-3721-4A25-8352-7A1A2C322809}.Azure|Any CPU.Build.0 = Azure|Any CPU
 		{6A153C29-3721-4A25-8352-7A1A2C322809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A153C29-3721-4A25-8352-7A1A2C322809}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A153C29-3721-4A25-8352-7A1A2C322809}.Release|Any CPU.ActiveCfg = Release|Any CPU
