@@ -2240,7 +2240,10 @@ namespace Mahjong.Controllers
                 && r2.DianpaoId != -1
                 && !r1.Zimo
                 && !r2.Zimo
-                && r1.DianpaoId == r2.DianpaoId;
+                && r1.DianpaoId == r2.DianpaoId
+                && r1.WinnerId != -1
+                && r2.WinnerId != -1
+                && r1.WinnerId != r2.WinnerId;
         }
 
         private bool IsMultipleChengBao(RoundDetail r1, RoundDetail r2)
