@@ -394,7 +394,7 @@ namespace Mahjong.Controllers
 
                     dbUtility.Insert(
                         sqlServer,
-                        SQL.insertRound,
+                        SQL.insertRoundDetail,
                         new DbParameter("@round_id", roundId),
                         new DbParameter("@delta1", DbUtility.Zero),
                         new DbParameter("@delta2", DbUtility.Zero),
