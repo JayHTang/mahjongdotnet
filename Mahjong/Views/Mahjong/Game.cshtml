@@ -15,6 +15,26 @@
         fieldLock = "return false;";
     }
 }
+@section css{
+    <style>
+        td {
+            vertical-align:middle !important
+        }
+        #details tbody:hover,
+        #details tr.hover,
+        #details th.hover,
+        #details td.hover,
+        #details tr.hoverable:hover {
+            background-color: #dde2e6;
+        }
+        #details tbody {
+            border-top-width:1px;
+        }
+        #details th {
+            border-top-width:2px;
+        }
+    </style>    
+}
 
 <div class="container-fluid">
     <div class="row">
@@ -185,7 +205,7 @@
                 </div>
             </div>
             <h2>详情</h2>
-            <table class="table table-bordered table-hover table-sm">
+            <table class="table table-bordered table-sm" id="details">
                 @for (int i = 0; i < gameLogs.Count; i++)
                 {
                     GameLog gameLog = gameLogs[i];
@@ -195,55 +215,114 @@
                         <th>@playerBook[@gameLog.Player2Id]</th>
                         <th>@playerBook[@gameLog.Player3Id]</th>
                         <th>@playerBook[@gameLog.Player4Id]</th>
-                        <th>牌型</th>
+                        <th colspan="2">牌型</th>
                         <th>骰子</th>
                     </tr>
                     for (int j = gameLog.Results.Count - 1; j >= 0; j--)
                     {
                         var roundResult = gameLog.Results[j];
-                        <tr>
-                            <td>@(j + 1)</td>
-                            <td>@roundResult.Round.Delta1.ToString("#,##0.00")</td>
-                            <td>@roundResult.Round.Delta2.ToString("#,##0.00")</td>
-                            <td>@roundResult.Round.Delta3.ToString("#,##0.00")</td>
-                            <td>@roundResult.Round.Delta4.ToString("#,##0.00")</td>
-                            <td>
-                                @if (@roundResult.Description.Length > 0)
+                        <tbody>
+                            <tr>
+                                <td rowspan="@roundResult.RoundDetails.Count">@(j + 1)</td>
+                                <td rowspan="@roundResult.RoundDetails.Count">@roundResult.Round.Delta1.ToString("#,##0.00")</td>
+                                <td rowspan="@roundResult.RoundDetails.Count">@roundResult.Round.Delta2.ToString("#,##0.00")</td>
+                                <td rowspan="@roundResult.RoundDetails.Count">@roundResult.Round.Delta3.ToString("#,##0.00")</td>
+                                <td rowspan="@roundResult.RoundDetails.Count">@roundResult.Round.Delta4.ToString("#,##0.00")</td>
+                                @if (@roundResult.RoundDetails.Count > 1)
                                 {
-                                    @roundResult.Description <br />
-                                }
-                                @foreach (RoundDetail roundDetail in roundResult.RoundDetails)
-                                {
-                                    @roundDetail.Description
-                                    if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
-                                    {
+                                    <td rowspan="@roundResult.RoundDetails.Count" style="width:1%;white-space:nowrap;border-right:none;text-align:center">@roundResult.Description</td>
+                                    <td style="border-left:none;border-bottom:none">
+                                        @roundResult.RoundDetails[0].Description
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+                                        {
                                         <a class="modal-edit-round"
                                            href="#"
                                            data-toggle="modal"
                                            data-target="#editRound"
-                                           data-description="@roundDetail.Description"
+                                           data-description="@roundResult.RoundDetails[0].Description"
                                            data-roundid="@roundResult.Round.Id"
-                                           data-rounddetailid="@roundDetail.Id"
-                                           data-winnerid="@roundDetail.WinnerId"
-                                           data-huaCount="@roundDetail.HuaCount"
-                                           data-handid="@roundDetail.HandId"
-                                           data-lezi="@roundDetail.Lezi.ToString()"
-                                           data-menqing="@roundDetail.Menqing.ToString()"
-                                           data-zimo="@roundDetail.Zimo.ToString()"
-                                           data-dianpaoid="@roundDetail.DianpaoId"
-                                           data-qianggang="@roundDetail.Qianggang.ToString()"
-                                           data-huangfan="@roundDetail.Huangfan.ToString()"
-                                           data-gangkai="@roundDetail.Gangkai.ToString()"
-                                           data-laoyue="@roundDetail.Laoyue.ToString()"
-                                           data-chengbaoid="@roundDetail.ChengbaoId">
+                                           data-rounddetailid="@roundResult.RoundDetails[0].Id"
+                                           data-winnerid="@roundResult.RoundDetails[0].WinnerId"
+                                           data-huaCount="@roundResult.RoundDetails[0].HuaCount"
+                                           data-handid="@roundResult.RoundDetails[0].HandId"
+                                           data-lezi="@roundResult.RoundDetails[0].Lezi.ToString()"
+                                           data-menqing="@roundResult.RoundDetails[0].Menqing.ToString()"
+                                           data-zimo="@roundResult.RoundDetails[0].Zimo.ToString()"
+                                           data-dianpaoid="@roundResult.RoundDetails[0].DianpaoId"
+                                           data-qianggang="@roundResult.RoundDetails[0].Qianggang.ToString()"
+                                           data-huangfan="@roundResult.RoundDetails[0].Huangfan.ToString()"
+                                           data-gangkai="@roundResult.RoundDetails[0].Gangkai.ToString()"
+                                           data-laoyue="@roundResult.RoundDetails[0].Laoyue.ToString()"
+                                           data-chengbaoid="@roundResult.RoundDetails[0].ChengbaoId">
                                             <img src="~/Content/images/edit.png" style="height: 1.5em" />
                                         </a>
-                                    }
-                                    <br />
+                                        }
+                                    </td>
                                 }
-                            </td>
-                            <td>@Html.Raw(roundResult.Dice)</td>
-                        </tr>
+                                else { 
+                                    <td colspan="2">
+                                        @roundResult.RoundDetails[0].Description
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+                                        {
+                                            <a class="modal-edit-round"
+                                               href="#"
+                                               data-toggle="modal"
+                                               data-target="#editRound"
+                                               data-description="@roundResult.RoundDetails[0].Description"
+                                               data-roundid="@roundResult.Round.Id"
+                                               data-rounddetailid="@roundResult.RoundDetails[0].Id"
+                                               data-winnerid="@roundResult.RoundDetails[0].WinnerId"
+                                               data-huaCount="@roundResult.RoundDetails[0].HuaCount"
+                                               data-handid="@roundResult.RoundDetails[0].HandId"
+                                               data-lezi="@roundResult.RoundDetails[0].Lezi.ToString()"
+                                               data-menqing="@roundResult.RoundDetails[0].Menqing.ToString()"
+                                               data-zimo="@roundResult.RoundDetails[0].Zimo.ToString()"
+                                               data-dianpaoid="@roundResult.RoundDetails[0].DianpaoId"
+                                               data-qianggang="@roundResult.RoundDetails[0].Qianggang.ToString()"
+                                               data-huangfan="@roundResult.RoundDetails[0].Huangfan.ToString()"
+                                               data-gangkai="@roundResult.RoundDetails[0].Gangkai.ToString()"
+                                               data-laoyue="@roundResult.RoundDetails[0].Laoyue.ToString()"
+                                               data-chengbaoid="@roundResult.RoundDetails[0].ChengbaoId">
+                                                <img src="~/Content/images/edit.png" style="height: 1.5em" />
+                                            </a>
+                                        }
+                                    </td>
+                                }
+                                <td rowspan="@roundResult.RoundDetails.Count">@Html.Raw(roundResult.Dice)</td>
+                            </tr>
+                            @for (int k = 1; k < roundResult.RoundDetails.Count; k++)
+                            {
+                                <tr>
+                                    <td style="border-left:none;border-top:none">
+                                        @roundResult.RoundDetails[k].Description
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+                                        {
+                                            <a class="modal-edit-round"
+                                               href="#"
+                                               data-toggle="modal"
+                                               data-target="#editRound"
+                                               data-description="@roundResult.RoundDetails[k].Description"
+                                               data-roundid="@roundResult.Round.Id"
+                                               data-rounddetailid="@roundResult.RoundDetails[k].Id"
+                                               data-winnerid="@roundResult.RoundDetails[k].WinnerId"
+                                               data-huaCount="@roundResult.RoundDetails[k].HuaCount"
+                                               data-handid="@roundResult.RoundDetails[k].HandId"
+                                               data-lezi="@roundResult.RoundDetails[k].Lezi.ToString()"
+                                               data-menqing="@roundResult.RoundDetails[k].Menqing.ToString()"
+                                               data-zimo="@roundResult.RoundDetails[k].Zimo.ToString()"
+                                               data-dianpaoid="@roundResult.RoundDetails[k].DianpaoId"
+                                               data-qianggang="@roundResult.RoundDetails[k].Qianggang.ToString()"
+                                               data-huangfan="@roundResult.RoundDetails[k].Huangfan.ToString()"
+                                               data-gangkai="@roundResult.RoundDetails[k].Gangkai.ToString()"
+                                               data-laoyue="@roundResult.RoundDetails[k].Laoyue.ToString()"
+                                               data-chengbaoid="@roundResult.RoundDetails[k].ChengbaoId">
+                                                <img src="~/Content/images/edit.png" style="height: 1.5em" />
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
                     }
                 }
             </table>

@@ -1713,21 +1713,20 @@ namespace Mahjong.Controllers
 
         private string GetRoundDescription(RoundDetail round, Dictionary<int, string> playerBook)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             if (round.WinnerId != -1)
             {
-                int multiplier = -1;
                 string handName = "";
                 // somebody wins
                 string huaCount = "";
                 if (round.HandId != -1)
                 {
                     DataRow hand = dbUtility.Read(sqlServer, SQL.getHand, new DbParameter("@handId", round.HandId)).Rows[0];
-                    multiplier = Convert.ToInt32(hand["multiplier"]);
+                    int multiplier = Convert.ToInt32(hand["multiplier"]);
                     handName = hand["name"].ToString();
                     if (multiplier == 0)
                     {
-                        huaCount = $"{round.HuaCount.ToString()}花 ";
+                        huaCount = $"{round.HuaCount}花 ";
                     }
                 }
 
@@ -1743,11 +1742,22 @@ namespace Mahjong.Controllers
                         sb.Append($"{huaCount} {handName}");
                     }
 
+                    if (round.Menqing)
+                    {
+                        sb.Append(", 门清");
+                    }
                     if (round.Gangkai)
                     {
                         sb.Append($", 杠开");
                     }
-
+                    if (round.Laoyue)
+                    {
+                        sb.Append(", 海底捞月");
+                    }
+                    if (round.Huangfan)
+                    {
+                        sb.Append(", 荒番");
+                    }
                     if (round.Qianggang)
                     {
                         sb.Append($", {playerBook[round.DianpaoId]} 送杠");
@@ -1758,44 +1768,58 @@ namespace Mahjong.Controllers
                     sb.Append($"{playerBook[round.WinnerId]} ");
                     if (round.Lezi)
                     {
-                        sb.Append($"{handName}, 大吊车, 抢杠 {playerBook[round.DianpaoId]}");
+                        sb.Append($"{handName}, 大吊车");
                     }
                     else
                     {
-                        sb.Append($"{huaCount}{handName}, 抢杠 {playerBook[round.DianpaoId]}");
+                        sb.Append($"{huaCount}{handName}");
                     }
 
+                    if (round.Menqing)
+                    {
+                        sb.Append(", 门清");
+                    }
+                    if (round.Laoyue)
+                    {
+                        sb.Append(", 海底捞月");
+                    }
+                    if (round.Huangfan)
+                    {
+                        sb.Append(", 荒番");
+                    }
+                    sb.Append($", 抢杠 {playerBook[round.DianpaoId]}");
                 }
                 else
                 {
                     sb.Append($"{playerBook[round.WinnerId]} ");
                     if (round.Lezi)
                     {
-                        sb.Append($"{handName}, 大吊车, {playerBook[round.DianpaoId]} 点炮");
+                        sb.Append($"{handName}, 大吊车");
                     }
                     else
                     {
-                        sb.Append($"{huaCount}{handName}, {playerBook[round.DianpaoId]} 点炮");
+                        sb.Append($"{huaCount}{handName}");
                     }
 
+                    if (round.Menqing)
+                    {
+                        sb.Append(", 门清");
+                    }
                     if (round.Gangkai)
                     {
                         sb.Append($", 杠开");
                     }
+                    if (round.Laoyue)
+                    {
+                        sb.Append(", 海底捞月");
+                    }
+                    if (round.Huangfan)
+                    {
+                        sb.Append(", 荒番");
+                    }
+                    sb.Append($", {playerBook[round.DianpaoId]} 点炮");
                 }
 
-                if (round.Huangfan)
-                {
-                    sb.Append(", 荒番");
-                }
-                if (round.Menqing)
-                {
-                    sb.Append(", 门清");
-                }
-                if (round.Laoyue)
-                {
-                    sb.Append(", 海底捞月");
-                }
                 if (round.ChengbaoId != -1)
                 {
                     sb.Append($", {playerBook[round.ChengbaoId]} 承包");
@@ -1868,11 +1892,15 @@ namespace Mahjong.Controllers
                 {
                     if (roundResult.RoundDetails.Count == 2)
                     {
-                        roundResult.Description = "一炮两响";
+                        roundResult.Description = $"{playerBook[roundResult.RoundDetails[0].DianpaoId]}一炮两响";
                     }
                     else if (roundResult.RoundDetails.Count == 3)
                     {
-                        roundResult.Description = "一炮三响";
+                        roundResult.Description = $"{playerBook[roundResult.RoundDetails[0].DianpaoId]}一炮三响";
+                    }
+                    foreach(RoundDetail roundDetail in roundResult.RoundDetails)
+                    {
+                        roundDetail.Description = roundDetail.Description.Substring(0, roundDetail.Description.LastIndexOf(','));
                     }
                 }
                 else if (IsMultipleChengBao(roundResult.RoundDetails[0], roundResult.RoundDetails[1]))
@@ -2235,7 +2263,7 @@ namespace Mahjong.Controllers
 
         private bool IsYiPaoLiangXiang(RoundDetail r1, RoundDetail r2)
         {
-            return Math.Abs((r1.Created - r2.Created).TotalSeconds) < 60
+            return Math.Abs((r1.Created - r2.Created).TotalSeconds) < 90
                 && r1.DianpaoId != -1
                 && r2.DianpaoId != -1
                 && !r1.Zimo
