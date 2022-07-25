@@ -99,9 +99,9 @@ namespace Mahjong.Controllers
 
             int round = 1000; // for sorting, not possible to play 1000 rounds a time
 
-            List<Player> players = new List<Player>();
+            List<Player> players = new();
 
-            Dictionary<int, Decimal> balanceSheet = new Dictionary<int, Decimal>
+            Dictionary<int, decimal> balanceSheet = new()
             {
                 { player1Id, 0 },
                 { player2Id, 0 },
@@ -116,7 +116,7 @@ namespace Mahjong.Controllers
             players.Add(new Player { Id = player3Id, Name = playerBook[player3Id], Order = round * 10 + 3 });
             players.Add(new Player { Id = player4Id, Name = playerBook[player4Id], Order = round * 10 + 4 });
 
-            List<GameLog> gameLogs = new List<GameLog>();
+            List<GameLog> gameLogs = new();
 
             // gameLogs are in reverse order, i.e. latest game appears first in the list
             // rounds are in normal order, first round appears first.
@@ -2276,7 +2276,7 @@ namespace Mahjong.Controllers
 
         private bool IsMultipleChengBao(RoundDetail r1, RoundDetail r2)
         {
-            return Math.Abs((r1.Created - r2.Created).TotalSeconds) < 60
+            bool result = Math.Abs((r1.Created - r2.Created).TotalSeconds) < 60
                 && r1.Zimo
                 && r2.Zimo
                 && r1.WinnerId == r2.WinnerId
@@ -2284,11 +2284,17 @@ namespace Mahjong.Controllers
                 && r2.ChengbaoId != -1
                 && r1.ChengbaoId != r2.ChengbaoId
                 && r1.HandId == r2.HandId
-                && r1.HuaCount == r2.HuaCount
                 && r1.Lezi == r2.Lezi
                 && r1.Menqing == r2.Menqing
                 && r1.Gangkai == r2.Gangkai
                 && r1.Laoyue == r2.Laoyue;
+
+            if (result && r1.HandId < 3 && !r1.Lezi)
+            {
+                return r1.HuaCount == r2.HuaCount;
+            }
+
+            return result;
         }
 
         private string GetRealPlayerMessage(DateTime lastGameDate)
