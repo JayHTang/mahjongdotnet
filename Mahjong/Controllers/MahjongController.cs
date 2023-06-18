@@ -1030,8 +1030,18 @@ namespace Mahjong.Controllers
                             
                             if (roundDetail.Qianggang)
                             {
-                                statBook[roundDetail.ChengbaoId].ChengbaoLose8++;
-                                statBook[roundDetail.ChengbaoId].ChengbaoLose8Money += loss;
+                                if (roundDetail.DianpaoId == roundDetail.ChengbaoId)
+                                {
+                                    // 包八家
+                                    statBook[roundDetail.ChengbaoId].ChengbaoLose8++;
+                                    statBook[roundDetail.ChengbaoId].ChengbaoLose8Money += loss;
+                                }
+                                else
+                                {
+                                    // 包五家 + 送杠, where 送杠 already set
+                                    statBook[roundDetail.ChengbaoId].ChengbaoLose5++;
+                                    statBook[roundDetail.ChengbaoId].ChengbaoLose5Money += loss;
+                                }
                             }
                             else
                             {
