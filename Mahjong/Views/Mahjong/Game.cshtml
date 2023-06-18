@@ -261,6 +261,7 @@
                                 }
                                 else { 
                                     <td colspan="2">
+                                        @roundResult.Description
                                         @roundResult.RoundDetails[0].Description
                                         @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
                                         {

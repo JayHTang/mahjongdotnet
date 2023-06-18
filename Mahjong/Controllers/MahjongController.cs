@@ -1941,6 +1941,14 @@ namespace Mahjong.Controllers
                     }
                 }
             }
+            else
+            {
+                RoundDetail rd = roundResult.RoundDetails[0];
+                if(rd.Zimo && rd.Qianggang && rd.ChengbaoId != -1)
+                {
+                    roundResult.Description = "包八家";
+                }
+            }
 
             return roundResult;
         }
