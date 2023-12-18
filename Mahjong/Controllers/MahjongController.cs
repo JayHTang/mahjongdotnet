@@ -96,6 +96,8 @@ namespace Mahjong.Controllers
             int player2Id = Convert.ToInt32(game["player2_id"]);
             int player3Id = Convert.ToInt32(game["player3_id"]);
             int player4Id = Convert.ToInt32(game["player4_id"]);
+            DateTime created = Convert.ToDateTime(game["created"]);
+            ViewData["gameDate"] = created.ToShortDateString();
 
             int round = 1000; // for sorting, not possible to play 1000 rounds a time
 
