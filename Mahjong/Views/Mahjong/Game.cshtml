@@ -1,7 +1,6 @@
 ﻿@using Mahjong.Models.Mahjong
 @model Result
 @{
-    ViewBag.Title = "Results";
     var playerBook = (Dictionary<int, string>)ViewData["playerBook"];
     var players = (List<Player>)ViewData["players"];
     var balanceSheet = (Dictionary<int, Decimal>)ViewData["balanceSheet"];
@@ -9,6 +8,15 @@
     var hands = (List<Hand>)ViewData["hands"];
     var huangfanCount = (int)ViewData["huangfanCount"];
     var finished = (bool)ViewData["finished"];
+    var date = ViewData["gameDate"];
+    if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
+    {
+        ViewBag.Title = "Results";
+    }
+    else
+    {
+        ViewBag.Title = "麻将局 " + date;
+    }
     string fieldLock = "";
     if (finished)
     {
@@ -18,8 +26,9 @@
 @section css{
     <style>
         td {
-            vertical-align:middle !important
+            vertical-align: middle !important
         }
+
         #details tbody:hover,
         #details tr.hover,
         #details th.hover,
@@ -27,13 +36,15 @@
         #details tr.hoverable:hover {
             background-color: #dde2e6;
         }
+
         #details tbody {
-            border-top-width:1px;
+            border-top-width: 1px;
         }
+
         #details th {
-            border-top-width:2px;
+            border-top-width: 2px;
         }
-    </style>    
+    </style>
 }
 
 <div class="container-fluid">
@@ -132,7 +143,7 @@
         <div class="col-lg-9">
             <div class="row">
                 <div class="col-lg-3">
-                    <h2>盈亏</h2>
+                    <h2>输赢</h2>
                     <table class="table table-bordered table-hover table-sm">
                         @foreach (var player in players)
                         {
@@ -169,12 +180,12 @@
                                 }
                             },
                             YAxis = new List<YAxis>
-                                                                {
+                                                                            {
                                 new YAxis
                                 {
                                     Title = new YAxisTitle
                                     {
-                                        Text = "盈亏"
+                                        Text = "输赢"
                                     }
                                 }
                             },
@@ -235,31 +246,32 @@
                                         @roundResult.RoundDetails[0].Description
                                         @if (User.IsInRole("Administrator") || User.IsInRole("Mahjong"))
                                         {
-                                        <a class="modal-edit-round"
-                                           href="#"
-                                           data-toggle="modal"
-                                           data-target="#editRound"
-                                           data-description="@roundResult.RoundDetails[0].Description"
-                                           data-roundid="@roundResult.Round.Id"
-                                           data-rounddetailid="@roundResult.RoundDetails[0].Id"
-                                           data-winnerid="@roundResult.RoundDetails[0].WinnerId"
-                                           data-huaCount="@roundResult.RoundDetails[0].HuaCount"
-                                           data-handid="@roundResult.RoundDetails[0].HandId"
-                                           data-lezi="@roundResult.RoundDetails[0].Lezi.ToString()"
-                                           data-menqing="@roundResult.RoundDetails[0].Menqing.ToString()"
-                                           data-zimo="@roundResult.RoundDetails[0].Zimo.ToString()"
-                                           data-dianpaoid="@roundResult.RoundDetails[0].DianpaoId"
-                                           data-qianggang="@roundResult.RoundDetails[0].Qianggang.ToString()"
-                                           data-huangfan="@roundResult.RoundDetails[0].Huangfan.ToString()"
-                                           data-gangkai="@roundResult.RoundDetails[0].Gangkai.ToString()"
-                                           data-laoyue="@roundResult.RoundDetails[0].Laoyue.ToString()"
-                                           data-chengbaoid="@roundResult.RoundDetails[0].ChengbaoId">
-                                            <img src="~/Content/images/edit.png" style="height: 1.5em" />
-                                        </a>
+                                            <a class="modal-edit-round"
+                                               href="#"
+                                               data-toggle="modal"
+                                               data-target="#editRound"
+                                               data-description="@roundResult.RoundDetails[0].Description"
+                                               data-roundid="@roundResult.Round.Id"
+                                               data-rounddetailid="@roundResult.RoundDetails[0].Id"
+                                               data-winnerid="@roundResult.RoundDetails[0].WinnerId"
+                                               data-huaCount="@roundResult.RoundDetails[0].HuaCount"
+                                               data-handid="@roundResult.RoundDetails[0].HandId"
+                                               data-lezi="@roundResult.RoundDetails[0].Lezi.ToString()"
+                                               data-menqing="@roundResult.RoundDetails[0].Menqing.ToString()"
+                                               data-zimo="@roundResult.RoundDetails[0].Zimo.ToString()"
+                                               data-dianpaoid="@roundResult.RoundDetails[0].DianpaoId"
+                                               data-qianggang="@roundResult.RoundDetails[0].Qianggang.ToString()"
+                                               data-huangfan="@roundResult.RoundDetails[0].Huangfan.ToString()"
+                                               data-gangkai="@roundResult.RoundDetails[0].Gangkai.ToString()"
+                                               data-laoyue="@roundResult.RoundDetails[0].Laoyue.ToString()"
+                                               data-chengbaoid="@roundResult.RoundDetails[0].ChengbaoId">
+                                                <img src="~/Content/images/edit.png" style="height: 1.5em" />
+                                            </a>
                                         }
                                     </td>
                                 }
-                                else { 
+                                else
+                                {
                                     <td colspan="2">
                                         @roundResult.Description
                                         @roundResult.RoundDetails[0].Description
