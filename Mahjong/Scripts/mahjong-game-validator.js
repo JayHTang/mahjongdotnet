@@ -19,7 +19,7 @@
                 $('#result_form #Gangkai').after('<span class="alert alert-danger">送杠必须杠开</span>');
                 e.preventDefault();
             }
-            else if (!zimo && qianggang && gangkai){
+            else if (!zimo && qianggang && gangkai) {
                 $('#result_form #Gangkai').after('<span class="alert alert-danger">抢杠不算杠开</span>');
                 e.preventDefault();
             }
@@ -46,6 +46,9 @@
             else if (hand == 0) {
                 $('#result_form #HandId').after('<span class="alert alert-danger">请选择牌型</span>');
                 e.preventDefault();
+            }
+            else {
+                $(this).unbind('submit').submit();
             }
         }
 
@@ -98,6 +101,9 @@
             else if (hand == 0) {
                 $('#edit_form #HandId').after('<span class="alert alert-danger">请选择牌型</span>');
                 e.preventDefault();
+            }
+            else {
+                $(this).unbind('submit').submit();
             }
         }
 
