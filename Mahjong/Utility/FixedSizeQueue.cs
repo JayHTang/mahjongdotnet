@@ -19,6 +19,6 @@ namespace Mahjong.Utility
             }
         }
 
-        private int _size;
+        private readonly int _size;
     }
 }

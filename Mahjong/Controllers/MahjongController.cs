@@ -5,14 +5,15 @@ using Mahjong.Models.Mahjong;
 using Mahjong.Utility;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Web.Mvc;
+using Microsoft.Extensions.Configuration;
 
 #if SQLITE
 using DbParameter = System.Data.SQLite.SQLiteParameter;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 #else
 using DbParameter = System.Data.SqlClient.SqlParameter;
 #endif
@@ -21,10 +22,22 @@ namespace Mahjong.Controllers
 {
     public class MahjongController : Controller
     {
-        static readonly public decimal huaThreshold = decimal.Parse(ConfigurationManager.AppSettings["mahjong_huaThreshold"]); // be greater than this number to be a valid game
-        static readonly public int roundCountThreshold = int.Parse(ConfigurationManager.AppSettings["mahjong_roundCountThreshold"]); // greater than or equal to this number to be a real player
-        static readonly public int gameIdThreshold = int.Parse(ConfigurationManager.AppSettings["mahjong_gameIdThreshold"]); // be greater than this number to be a valid game
-        static readonly public int lastPlayDateThreshold = int.Parse(ConfigurationManager.AppSettings["mahjong_lastPlayDateThreshold"]); // difference between the last time played and last game in record must be less than this number to be a real player
+        private readonly IConfiguration _configuration;
+        public readonly decimal huaThreshold; // be greater than this number to be a valid game
+        public readonly int roundCountThreshold; // greater than or equal to this number to be a real player
+        public readonly int gameIdThreshold; // be greater than this number to be a valid game
+        public readonly int lastPlayDateThreshold; // difference between the last time played and last game in record must be less than this number to be a real player
+        private readonly string sqlServer;
+
+        public MahjongController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            huaThreshold = _configuration.GetValue<decimal>("AppSettings:mahjong_huaThreshold");
+            roundCountThreshold = _configuration.GetValue<int>("AppSettings:mahjong_roundCountThreshold");
+            gameIdThreshold = _configuration.GetValue<int>("AppSettings:mahjong_gameIdThreshold");
+            lastPlayDateThreshold = _configuration.GetValue<int>("AppSettings:mahjong_lastPlayDateThreshold");
+            sqlServer = _configuration.GetConnectionString("Mahjong");
+        }
 
         [HttpGet]
         [Authorize(Roles = "Administrator, Mahjong")]
@@ -53,7 +66,7 @@ namespace Mahjong.Controllers
 
             ViewData["players"] = GetAllPlayersByRoundsPlayed();
 
-            return View();
+            return View(new Game { HuaValue = 0.5m, LeziValue = 5m });
         }
 
         [HttpPost]
@@ -101,7 +114,7 @@ namespace Mahjong.Controllers
 
             int round = 1000; // for sorting, not possible to play 1000 rounds a time
 
-            List<Player> players = new();
+            List<Player> players = [];
 
             Dictionary<int, decimal> balanceSheet = new()
             {
@@ -118,7 +131,7 @@ namespace Mahjong.Controllers
             players.Add(new Player { Id = player3Id, Name = playerBook[player3Id], Order = round * 10 + 3 });
             players.Add(new Player { Id = player4Id, Name = playerBook[player4Id], Order = round * 10 + 4 });
 
-            List<GameLog> gameLogs = new();
+            List<GameLog> gameLogs = [];
 
             // gameLogs are in reverse order, i.e. latest game appears first in the list
             // rounds are in normal order, first round appears first.
@@ -130,7 +143,7 @@ namespace Mahjong.Controllers
                     Player2Id = player2Id,
                     Player3Id = player3Id,
                     Player4Id = player4Id,
-                    Results = new List<RoundResult>()
+                    Results = []
                 };
 
                 DataRowCollection roundRows = dbUtility.Read(sqlServer, SQL.getRounds, new DbParameter("@gameId", Convert.ToInt32(game["id"]))).Rows;
@@ -194,11 +207,11 @@ namespace Mahjong.Controllers
             ViewData["gameLogs"] = gameLogs;
 
             // Highcharts
-            Dictionary<int, List<decimal>> runningBalance = new Dictionary<int, List<decimal>>();// <id, list of accumulating balance>
+            Dictionary<int, List<decimal>> runningBalance = [];// <id, list of accumulating balance>
             foreach (Player player in players)
             {
-                runningBalance.Add(player.Id, new List<decimal> { 0 });
-            };
+                runningBalance.Add(player.Id, [0]);
+            }
 
             for (int i = gameLogs.Count - 1; i >= 0; i--)
             {
@@ -221,10 +234,10 @@ namespace Mahjong.Controllers
                 }
             }
 
-            List<Series> hc_series = new List<Series>();
+            List<Series> hc_series = [];
             foreach (Player player in players)
             {
-                List<SplineSeriesData> data = new List<SplineSeriesData>();
+                List<SplineSeriesData> data = [];
                 for (int i = 0; i < runningBalance[player.Id].Count; i++)
                 {
                     decimal balance = runningBalance[player.Id][i];
@@ -248,7 +261,7 @@ namespace Mahjong.Controllers
 
             game = dbUtility.Read(sqlServer, SQL.getGame, new DbParameter("@gameId", gameId)).Rows[0];
             int huangfanCount = Convert.ToInt32(game["huangfan"]) - Convert.ToInt32(game["huangfan_executed"]);
-            Result result = new Result
+            Result result = new()
             {
                 Huangfan = huangfanCount > 0
             };
@@ -320,11 +333,11 @@ namespace Mahjong.Controllers
                         }
                     }
 
-                    Dictionary<int, decimal> winnings = GetWinnings(gameId, result, player1Id, player2Id, player3Id, player4Id, huaValue, leziValue);
+                    Dictionary<int, decimal> winnings = GetWinnings(result, player1Id, player2Id, player3Id, player4Id, huaValue, leziValue);
 
                     // done with winnings
-                    if (result.HuaCount == null)
-                        result.HuaCount = 0;
+                    result.HuaCount ??= 0;
+
                     DbParameter chengbao_id;
                     if (result.ChengbaoId == null)
                         chengbao_id = new DbParameter("@chengbao_id", DBNull.Value);
@@ -456,11 +469,10 @@ namespace Mahjong.Controllers
                         dbUtility.Update(sqlServer, SQL.updateGameDecrementHuangfan, new DbParameter("gameId", gameId));
                     }
 
-                    Dictionary<int, decimal> winnings = GetWinnings(gameId, result, player1Id, player2Id, player3Id, player4Id, huaValue, leziValue);
+                    Dictionary<int, decimal> winnings = GetWinnings(result, player1Id, player2Id, player3Id, player4Id, huaValue, leziValue);
 
                     // done with winnings
-                    if (result.HuaCount == null)
-                        result.HuaCount = 0;
+                    result.HuaCount ??= 0;
                     DbParameter chengbao_id;
                     if (result.ChengbaoId == null)
                         chengbao_id = new DbParameter("@chengbao_id", DBNull.Value);
@@ -525,7 +537,7 @@ namespace Mahjong.Controllers
 
                 UpdateRound(roundId);
             }
-            return RedirectToAction("Game", new { gameId = gameId });
+            return RedirectToAction("Game", new { gameId });
         }
 
         [HttpGet]
@@ -533,7 +545,7 @@ namespace Mahjong.Controllers
         public ActionResult Sub(int gameId)
         {
             DataRow prevGame = dbUtility.Read(sqlServer, SQL.getGame, new DbParameter("@gameId", gameId)).Rows[0];
-            Dictionary<int, Player> playersOnTable = new Dictionary<int, Player>
+            Dictionary<int, Player> playersOnTable = new()
             {
                 {1, new Player{Id = Convert.ToInt32(prevGame["player1_id"])} },
                 {2, new Player{Id = Convert.ToInt32(prevGame["player2_id"])} },
@@ -541,7 +553,7 @@ namespace Mahjong.Controllers
                 {4, new Player{Id = Convert.ToInt32(prevGame["player4_id"])} }
             };
 
-            List<Player> players = new List<Player>();
+            List<Player> players = [];
             DataTable dt = dbUtility.Read(sqlServer, SQL.getPlayers);
             foreach (DataRow dr in dt.Rows)
             {
@@ -602,7 +614,8 @@ namespace Mahjong.Controllers
         public ActionResult History()
         {
             // look for open games and close them
-            foreach (DataRow game in dbUtility.Read(sqlServer, SQL.getGamesUnfinished).Rows){
+            foreach (DataRow game in dbUtility.Read(sqlServer, SQL.getGamesUnfinished).Rows)
+            {
                 int id = Convert.ToInt32(game["id"]);
                 DateTime created = Convert.ToDateTime(game["created"]);
                 if ((DateTime.Now - created).TotalHours > 24)
@@ -620,18 +633,18 @@ namespace Mahjong.Controllers
         public ActionResult LeaderBoard()
         {
             List<Player> players = GetAllPlayers();
-            Dictionary<int, List<SplineSeriesData>> playerBalanceSeriesData = new Dictionary<int, List<SplineSeriesData>>();
-            List<Series> series = new List<Series>();
-            Dictionary<int, int> playerRoundCount = new Dictionary<int, int>();
-            Dictionary<int, decimal> playerBalanceSheet = new Dictionary<int, decimal>();
-            DateTime begin = DateTime.Parse(ConfigurationManager.AppSettings["mahjong_begin"]);
-            List<string> xAxis = new List<string> { begin.ToShortDateString() };
-            Dictionary<int, Dictionary<int, decimal>> playerBalanceSheetByYear = new();
-            Dictionary<int, Dictionary<int, int>> playerRoundCountByYear = new();
+            Dictionary<int, List<SplineSeriesData>> playerBalanceSeriesData = [];
+            List<Series> series = [];
+            Dictionary<int, int> playerRoundCount = [];
+            Dictionary<int, decimal> playerBalanceSheet = [];
+            DateTime begin = DateTime.Parse(_configuration.GetValue<string>("AppSettings:mahjong_begin"));
+            List<string> xAxis = [begin.ToShortDateString()];
+            Dictionary<int, Dictionary<int, decimal>> playerBalanceSheetByYear = [];
+            Dictionary<int, Dictionary<int, int>> playerRoundCountByYear = [];
 
             foreach (Player player in players)
             {
-                playerBalanceSeriesData.Add(player.Id, new List<SplineSeriesData> { new SplineSeriesData { Y = 0 } });
+                playerBalanceSeriesData.Add(player.Id, [new() { Y = 0 }]);
             }
 
             List<GameHistory> gameHistories = GetGameHistory();
@@ -661,7 +674,7 @@ namespace Mahjong.Controllers
 
             // by year
             List<GameHistory> separateGameHistories = GetGameHistory(false);
-            foreach(GameHistory gameHistory in separateGameHistories)
+            foreach (GameHistory gameHistory in separateGameHistories)
             {
                 if (Skip(gameHistory.GameId, gameHistory.HuaValue))
                 {
@@ -671,8 +684,8 @@ namespace Mahjong.Controllers
 
                 if (!playerBalanceSheetByYear.ContainsKey(gameHistory.Start.Year))
                 {
-                    playerBalanceSheetByYear[gameHistory.Start.Year] = new();
-                    playerRoundCountByYear[gameHistory.Start.Year] = new();
+                    playerBalanceSheetByYear[gameHistory.Start.Year] = [];
+                    playerRoundCountByYear[gameHistory.Start.Year] = [];
                 }
                 foreach (int playerId in gameHistory.Players)
                 {
@@ -689,12 +702,12 @@ namespace Mahjong.Controllers
                 }
             }
 
-            List<int> years = playerBalanceSheetByYear.Keys.ToList();
+            List<int> years = [.. playerBalanceSheetByYear.Keys];
             years.Sort((y1, y2) => y2 - y1);
-            Dictionary<int, List<Player>> rankedPlayersByYear = new();
+            Dictionary<int, List<Player>> rankedPlayersByYear = [];
             foreach (int year in years)
             {
-                rankedPlayersByYear[year] = new();
+                rankedPlayersByYear[year] = [];
                 foreach (Player player in players)
                 {
                     if (playerBalanceSheetByYear[year].ContainsKey(player.Id))
@@ -705,7 +718,7 @@ namespace Mahjong.Controllers
                 rankedPlayersByYear[year].Sort((p1, p2) => (int)(playerBalanceSheetByYear[year][p2.Id] - playerBalanceSheetByYear[year][p1.Id]));
             }
 
-            List<Player> realPlayers = new List<Player>();
+            List<Player> realPlayers = [];
             foreach (Player player in players)
             {
                 DataRow dr = dbUtility.Read(sqlServer, SQL.getNumOfRoundsPlayed, new DbParameter("@player_id", player.Id)).Rows[0];
@@ -753,18 +766,20 @@ namespace Mahjong.Controllers
             List<Player> players = GetAllPlayers();
             List<Hand> hands = GetHands();
             DataTable dt = dbUtility.Read(sqlServer, SQL.getRoundsWithGame, new DbParameter("@game_id", id));
-            DateTime lastRoundTime = Convert.ToDateTime(dt.Rows[dt.Rows.Count - 1]["created"]);
+            DateTime lastRoundTime = Convert.ToDateTime(dt.Rows[^1]["created"]);
 
             // get all round details
-            Dictionary<int, List<RoundDetail>> allRoundDetails = new();
+            Dictionary<int, List<RoundDetail>> allRoundDetails = [];
             foreach (DataRow r in dbUtility.Read(sqlServer, SQL.getRoundDetail, new DbParameter("@roundId", DbUtility.Zero)).Rows)
             {
                 RoundDetail roundDetail = GetRoundDetailFromDataRow(r);
-                if (!allRoundDetails.ContainsKey(roundDetail.RoundId))
+                if (!allRoundDetails.TryGetValue(roundDetail.RoundId, out List<RoundDetail> value))
                 {
-                    allRoundDetails.Add(roundDetail.RoundId, new List<RoundDetail>());
+                    value = [];
+                    allRoundDetails.Add(roundDetail.RoundId, value);
                 }
-                allRoundDetails[roundDetail.RoundId].Add(roundDetail);
+
+                value.Add(roundDetail);
             }
 
             // take care of the games with substitutions
@@ -788,10 +803,10 @@ namespace Mahjong.Controllers
             }
 
             // initialize stat book
-            Dictionary<int, Stat> statBook = new Dictionary<int, Stat>();
+            Dictionary<int, Stat> statBook = [];
             foreach (Player player in players)
             {
-                Stat stat = new Stat { Hands = new Dictionary<int, HandStats>(), UpMoneyWon = new Dictionary<int, decimal>(), UpMoneyWonCount = new Dictionary<int, int>(), HeadToHead = new Dictionary<int, decimal>() };
+                Stat stat = new() { Hands = [], UpMoneyWon = [], UpMoneyWonCount = [], HeadToHead = [] };
                 foreach (Hand hand in hands)
                 {
                     stat.Hands.Add(hand.Id, new HandStats());
@@ -806,13 +821,13 @@ namespace Mahjong.Controllers
                 if (Skip(Convert.ToInt32(dr["game_id"]), Convert.ToDecimal(dr["hua"])))
                     continue;
 
-                string[] indices = { "player1_id", "player2_id", "player3_id", "player4_id" };
-                string[] deltas = { "Delta1", "Delta2", "Delta3", "Delta4" };
+                string[] indices = ["player1_id", "player2_id", "player3_id", "player4_id"];
+                string[] deltas = ["Delta1", "Delta2", "Delta3", "Delta4"];
 
                 DateTime lastPlayed = Convert.ToDateTime(dr["created"]);
 
                 // players in this round
-                int[] playerIds = { Convert.ToInt32(dr["player1_id"]), Convert.ToInt32(dr["player2_id"]), Convert.ToInt32(dr["player3_id"]), Convert.ToInt32(dr["player4_id"]) };
+                int[] playerIds = [Convert.ToInt32(dr["player1_id"]), Convert.ToInt32(dr["player2_id"]), Convert.ToInt32(dr["player3_id"]), Convert.ToInt32(dr["player4_id"])];
 
                 // 荒庄
                 bool isHuangfan = Convert.ToDecimal(dr["delta1"]) == 0m && Convert.ToDecimal(dr["delta2"]) == 0m && Convert.ToDecimal(dr["delta3"]) == 0m && Convert.ToDecimal(dr["delta4"]) == 0m;
@@ -823,7 +838,7 @@ namespace Mahjong.Controllers
                     // round count
                     Stat stat = statBook[playerId];
                     stat.RoundsPlayed++;
-                    if (stat.LastPlayed == null || stat.LastPlayed < lastPlayed)
+                    if (stat.LastPlayed < lastPlayed)
                         stat.LastPlayed = lastPlayed;
 
                     if (isHuangfan)
@@ -887,7 +902,7 @@ namespace Mahjong.Controllers
                 // get round details
                 int roundId = Convert.ToInt32(dr["id"]);
                 List<RoundDetail> roundDetails = allRoundDetails[roundId];
-                
+
                 // look for 一炮两响
                 if (roundDetails.Count > 1)
                 {
@@ -906,7 +921,7 @@ namespace Mahjong.Controllers
                     for (int p = 0; p < 4; p++)
                     {
                         decimal loss = (decimal)roundDetail.GetType().GetProperty(deltas[p]).GetValue(roundDetail); // reflection trick to get the specific delta
-                        if(loss < 0)
+                        if (loss < 0)
                         {
                             AddOrIncrement(statBook[roundDetail.WinnerId].HeadToHead, playerIds[p], -loss);
                             AddOrIncrement(statBook[playerIds[p]].HeadToHead, roundDetail.WinnerId, loss);
@@ -919,16 +934,16 @@ namespace Mahjong.Controllers
                     // 自摸
                     if (roundDetail.Zimo)
                     {
-                        if(i == 0 || !IsMultipleChengBao(roundDetail, roundDetails[i - 1]))
+                        if (i == 0 || !IsMultipleChengBao(roundDetail, roundDetails[i - 1]))
                         {
                             statBook[roundDetail.WinnerId].ZimoWin++;
                         }
                         statBook[roundDetail.WinnerId].ZimoWinMoney += win;
-                        foreach(int playerId in playerIds)
+                        foreach (int playerId in playerIds)
                         {
-                            if(playerId != roundDetail.WinnerId)
+                            if (playerId != roundDetail.WinnerId)
                             {
-                                decimal loss = -(decimal)ReflectionUtility.GetValue(roundDetail, FindDelta(dr, playerId), true); 
+                                decimal loss = -(decimal)ReflectionUtility.GetValue(roundDetail, FindDelta(dr, playerId), true);
                                 if (loss > 0)
                                 {
                                     statBook[playerId].ZimoLose++;
@@ -947,7 +962,7 @@ namespace Mahjong.Controllers
                     {
                         statBook[roundDetail.WinnerId].DianpaoWin++;
                         statBook[roundDetail.WinnerId].DianpaoWinMoney += win;
-                        if(i == 0 || !IsYiPaoLiangXiang(roundDetail, roundDetails[i - 1]))
+                        if (i == 0 || !IsYiPaoLiangXiang(roundDetail, roundDetails[i - 1]))
                             statBook[roundDetail.DianpaoId].DianpaoLose++;
                         string delta = FindDelta(dr, roundDetail.DianpaoId);
                         statBook[roundDetail.DianpaoId].DianpaoLoseMoney += dianpaoLoss;
@@ -994,10 +1009,10 @@ namespace Mahjong.Controllers
                         else
                         {
                             statBook[roundDetail.WinnerId].QianggangWin++;
-                            statBook[roundDetail.WinnerId].QianggangWinMoney += win; 
+                            statBook[roundDetail.WinnerId].QianggangWinMoney += win;
                             statBook[roundDetail.DianpaoId].QianggangLose++;
                             statBook[roundDetail.DianpaoId].QianggangLoseMoney += dianpaoLoss;
-                        }                        
+                        }
                     }
 
                     // 承包赢
@@ -1013,7 +1028,7 @@ namespace Mahjong.Controllers
                             {
                                 // only calculates at the last detail
                                 int count = 5 * roundDetails.Count;
-                                foreach(RoundDetail rd in roundDetails)
+                                foreach (RoundDetail rd in roundDetails)
                                 {
                                     if (rd.Qianggang)
                                     {
@@ -1021,7 +1036,7 @@ namespace Mahjong.Controllers
                                         break;
                                     }
                                 }
-                                
+
                                 string winCountProperty = $"ChengbaoWin{count}";
                                 string WinMoneyProperty = $"ChengbaoWin{count}Money";
                                 ReflectionUtility.Increment(statBook[roundDetail.WinnerId], winCountProperty);
@@ -1029,7 +1044,7 @@ namespace Mahjong.Controllers
 
                                 statBook[roundDetail.WinnerId].ChengbaoWinMoney = 0; // reset
                             }
-                            
+
                             if (roundDetail.Qianggang)
                             {
                                 if (roundDetail.DianpaoId == roundDetail.ChengbaoId)
@@ -1070,7 +1085,7 @@ namespace Mahjong.Controllers
                                 statBook[roundDetail.ChengbaoId].ChengbaoLose1++;
                                 statBook[roundDetail.ChengbaoId].ChengbaoLose1Money += loss;
                             }
-                            
+
                         }
                     }
 
@@ -1088,7 +1103,7 @@ namespace Mahjong.Controllers
 
             }
 
-            List<Player> realPlayers = new List<Player>();
+            List<Player> realPlayers = [];
             foreach (Player player in players)
             {
                 if ((id != 0 && statBook[player.Id].RoundsPlayed > 0) || (id == 0 && statBook[player.Id].RoundsPlayed >= roundCountThreshold && (lastRoundTime - statBook[player.Id].LastPlayed).TotalDays < lastPlayDateThreshold))
@@ -1100,20 +1115,20 @@ namespace Mahjong.Controllers
             realPlayers.Sort((p1, p2) => p1.Name.CompareTo(p2.Name));
 
             // make Dependencywheel data
-            List<DependencywheelSeriesData> cashFlowData = new List<DependencywheelSeriesData>();
+            List<DependencywheelSeriesData> cashFlowData = [];
             foreach (Player player in realPlayers)
             {
                 Stat stat = statBook[player.Id];
-                    
+
                 foreach (Player opponent in realPlayers)
                 {
-                    if (opponent.Id != player.Id && stat.HeadToHead.ContainsKey(opponent.Id) && stat.HeadToHead[opponent.Id] > 0)
+                    if (opponent.Id != player.Id && stat.HeadToHead.TryGetValue(opponent.Id, out decimal value) && value > 0)
                     {
                         cashFlowData.Add(new DependencywheelSeriesData
                         {
                             From = opponent.Name,
                             To = player.Name,
-                            Weight = (double)stat.HeadToHead[opponent.Id]
+                            Weight = (double)value
                         });
                     }
                 }
@@ -1127,10 +1142,10 @@ namespace Mahjong.Controllers
             ViewBag.gameId = id;
 
             // Dice
-            List<Dice> dices = new List<Dice>();
-            List<DiceRoll> diceRolls = new List<DiceRoll>();
-            Dictionary<int, int> playerTotalRolls = new Dictionary<int, int> { { 0, 0 } };
-            List<Player> diceRollers = new List<Player>();
+            List<Dice> dices = [];
+            List<DiceRoll> diceRolls = [];
+            Dictionary<int, int> playerTotalRolls = new() { { 0, 0 } };
+            List<Player> diceRollers = [];
 
             foreach (Player player in realPlayers)
             {
@@ -1143,13 +1158,13 @@ namespace Mahjong.Controllers
             {
                 for (int j = i; j <= 6; j++)
                 {
-                    Dice dice = new Dice(i, j);
+                    Dice dice = new(i, j);
                     dices.Add(dice);
-                    DiceRoll diceRoll = new DiceRoll(dice);
+                    DiceRoll diceRoll = new(dice);
                     int total = 0;
 
                     DataTable dtDice = dbUtility.Read(sqlServer, SQL.getDiceRolled, new DbParameter("@dice1", i), new DbParameter("@dice2", j), new DbParameter("game_id", id));
-                    foreach(DataRow dr in dtDice.Rows)
+                    foreach (DataRow dr in dtDice.Rows)
                     {
                         int playerId = Convert.ToInt32(dr["player_id"]);
                         int count = Convert.ToInt32(dr["count"]);
@@ -1188,15 +1203,16 @@ namespace Mahjong.Controllers
             int winningThreshold = 100;
             int winningSingleRoundThreshold = 50;
             DataRowCollection winningRows = dbUtility.Read(sqlServer, SQL.getHighestWinnings, new DbParameter("@winning", winningSingleRoundThreshold)).Rows;
-            List<Record> records = new();
+            List<Record> records = [];
 
             foreach (DataRow dr in winningRows)
             {
                 RoundResult result = GetRoundResult(dr, playerBook);
 
-                if (result.Round.Winning >= winningThreshold) {
+                if (result.Round.Winning >= winningThreshold)
+                {
                     string description = result.Description == "" ? "" : result.Description + "<br />";
-                    foreach(RoundDetail roundDetail in result.RoundDetails)
+                    foreach (RoundDetail roundDetail in result.RoundDetails)
                     {
                         description += roundDetail.Description + "<br />";
                     }
@@ -1208,18 +1224,18 @@ namespace Mahjong.Controllers
                         Description = description
                     });
                 }
-                
+
             }
             ViewBag.records = records.OrderByDescending(y => y.Winning).ThenByDescending(y => y.Date).ToList();
 
             // single game
-            List<Record> recordsWinning = new List<Record>();
-            List<Record> recordsLoss = new List<Record>();
+            List<Record> recordsWinning = [];
+            List<Record> recordsLoss = [];
             foreach (GameHistory game in GetGameHistory())
             {
-                foreach(int playerID in game.Players)
+                foreach (int playerID in game.Players)
                 {
-                    Record record = new Record
+                    Record record = new()
                     {
                         Player = playerBook[playerID],
                         Date = game.Start.ToString("d"),
@@ -1243,15 +1259,15 @@ namespace Mahjong.Controllers
 
             // no PriorityQueue in .net framework :(
             // have to sort at the end
-            Dictionary<int, Dictionary<int, RoundRecord>> winningStreak = new();
-            Dictionary<int, Dictionary<int, RoundRecord>> zimoStreak = new();
-            Dictionary<int, Dictionary<int, RoundRecord>> losingStreak = new();
-            Dictionary<int, Dictionary<int, RoundRecord>> dianpaoStreak = new();
+            Dictionary<int, Dictionary<int, RoundRecord>> winningStreak = [];
+            Dictionary<int, Dictionary<int, RoundRecord>> zimoStreak = [];
+            Dictionary<int, Dictionary<int, RoundRecord>> losingStreak = [];
+            Dictionary<int, Dictionary<int, RoundRecord>> dianpaoStreak = [];
 
             #region Get game and round info
             // get game info
             DataTable dt2 = dbUtility.Read(sqlServer, SQL.getGames);
-            Dictionary<int, string> gameDates = new();
+            Dictionary<int, string> gameDates = [];
             foreach (DataRow dr in dt2.Rows)
             {
                 int id = Convert.ToInt32(dr["id"]);
@@ -1260,9 +1276,9 @@ namespace Mahjong.Controllers
                     continue;
                 }
                 int prev_id = dr["prev_game_id"] == DBNull.Value ? -1 : Convert.ToInt32(dr["prev_game_id"]);
-                if (gameDates.ContainsKey(prev_id))
+                if (gameDates.TryGetValue(prev_id, out string value))
                 {
-                    gameDates.Add(id, gameDates[prev_id]);
+                    gameDates.Add(id, value);
                 }
                 else
                 {
@@ -1271,25 +1287,27 @@ namespace Mahjong.Controllers
             }
 
             // get all round details
-            Dictionary<int, List<RoundDetail>> allRoundDetails = new();
+            Dictionary<int, List<RoundDetail>> allRoundDetails = [];
             foreach (DataRow r in dbUtility.Read(sqlServer, SQL.getRoundDetail, new DbParameter("@roundId", DbUtility.Zero)).Rows)
             {
                 RoundDetail roundDetail = GetRoundDetailFromDataRow(r);
-                if (!allRoundDetails.ContainsKey(roundDetail.RoundId))
+                if (!allRoundDetails.TryGetValue(roundDetail.RoundId, out List<RoundDetail> value))
                 {
-                    allRoundDetails.Add(roundDetail.RoundId, new List<RoundDetail>());
+                    value = [];
+                    allRoundDetails.Add(roundDetail.RoundId, value);
                 }
-                allRoundDetails[roundDetail.RoundId].Add(roundDetail);
+
+                value.Add(roundDetail);
             }
             #endregion
 
-            Dictionary<int, StreakInfo> winners = new();
-            Dictionary<int, StreakInfo> zimos = new();
-            Dictionary<int, StreakInfo> losers = new();
-            Dictionary<int, StreakInfo> dianpaos = new();
+            Dictionary<int, StreakInfo> winners = [];
+            Dictionary<int, StreakInfo> zimos = [];
+            Dictionary<int, StreakInfo> losers = [];
+            Dictionary<int, StreakInfo> dianpaos = [];
             int gameId = 0;
             int count = 0;
-            foreach(DataRow dr in dt.Rows)
+            foreach (DataRow dr in dt.Rows)
             {
                 count++;
                 if (Skip(Convert.ToInt32(dr["game_id"]), Convert.ToDecimal(dr["hua"])))
@@ -1324,17 +1342,17 @@ namespace Mahjong.Controllers
                     continue; //荒庄
 
                 // players in this round
-                int[] playerIds = new int[4] { Convert.ToInt32(dr["player1_id"]), Convert.ToInt32(dr["player2_id"]), Convert.ToInt32(dr["player3_id"]), Convert.ToInt32(dr["player4_id"]) };
+                int[] playerIds = [Convert.ToInt32(dr["player1_id"]), Convert.ToInt32(dr["player2_id"]), Convert.ToInt32(dr["player3_id"]), Convert.ToInt32(dr["player4_id"])];
 
                 #region winner logic
                 // find winner
-                HashSet<int> roundWinners = new();
+                HashSet<int> roundWinners = [];
                 foreach (RoundDetail rd in allRoundDetails[round.Id])
                 {
                     roundWinners.Add(rd.WinnerId);
                 }
 
-                int[] winningPlayers = winners.Keys.ToArray();
+                int[] winningPlayers = [.. winners.Keys];
                 foreach (int playerId in winningPlayers)
                 {
                     if (!roundWinners.Contains(playerId))
@@ -1343,14 +1361,13 @@ namespace Mahjong.Controllers
                         EndStreaks(winningStreak, winners, playerBook, gameId, playerId);
                     }
                 }
-                foreach(int playerId in roundWinners)
+                foreach (int playerId in roundWinners)
                 {
                     decimal cashflow = Convert.ToDecimal(dr[FindDelta(dr, playerId)]);
-                    if (winners.ContainsKey(playerId))
+                    if (winners.TryGetValue(playerId, out StreakInfo value))
                     {
-                        // streak continues
-                        winners[playerId].Count++;
-                        winners[playerId].Cashflow += cashflow;
+                        value.Count++;
+                        value.Cashflow += cashflow;
                     }
                     else
                     {
@@ -1366,11 +1383,10 @@ namespace Mahjong.Controllers
                 {
                     int roundZimoPlayerId = allRoundDetails[round.Id][0].WinnerId;
                     decimal cashflow = Convert.ToDecimal(dr[FindDelta(dr, roundZimoPlayerId)]);
-                    if (zimos.ContainsKey(roundZimoPlayerId))
+                    if (zimos.TryGetValue(roundZimoPlayerId, out StreakInfo value))
                     {
-                        // streak continues
-                        zimos[roundZimoPlayerId].Count++;
-                        zimos[roundZimoPlayerId].Cashflow += cashflow;
+                        value.Count++;
+                        value.Cashflow += cashflow;
                     }
                     else
                     {
@@ -1390,7 +1406,7 @@ namespace Mahjong.Controllers
 
                 #region loser logic
                 // find loser
-                Dictionary<int, decimal> roundLosers = new();
+                Dictionary<int, decimal> roundLosers = [];
                 foreach (int playerId in playerIds)
                 {
                     decimal cashflow = -Convert.ToDecimal(dr[FindDelta(dr, playerId)]);
@@ -1400,9 +1416,9 @@ namespace Mahjong.Controllers
                         roundLosers.Add(playerId, cashflow);
                     }
                 }
-                
-                int[] losingPlayers = losers.Keys.ToArray();
-                foreach(int playerId in losingPlayers)
+
+                int[] losingPlayers = [.. losers.Keys];
+                foreach (int playerId in losingPlayers)
                 {
                     if (!roundLosers.ContainsKey(playerId))
                     {
@@ -1410,13 +1426,12 @@ namespace Mahjong.Controllers
                         EndStreaks(losingStreak, losers, playerBook, gameId, playerId);
                     }
                 }
-                foreach(int playerId in roundLosers.Keys)
+                foreach (int playerId in roundLosers.Keys)
                 {
-                    if (losers.ContainsKey(playerId))
+                    if (losers.TryGetValue(playerId, out StreakInfo value))
                     {
-                        // steak continues
-                        losers[playerId].Count++;
-                        losers[playerId].Cashflow += roundLosers[playerId];
+                        value.Count++;
+                        value.Cashflow += roundLosers[playerId];
                     }
                     else
                     {
@@ -1432,11 +1447,10 @@ namespace Mahjong.Controllers
                 {
                     int roundDianpaoPlayerId = allRoundDetails[round.Id][0].DianpaoId;
                     decimal cashflow = -Convert.ToDecimal(dr[FindDelta(dr, roundDianpaoPlayerId)]);
-                    if (dianpaos.ContainsKey(roundDianpaoPlayerId))
+                    if (dianpaos.TryGetValue(roundDianpaoPlayerId, out StreakInfo value))
                     {
-                        // streak continues
-                        dianpaos[roundDianpaoPlayerId].Count++;
-                        dianpaos[roundDianpaoPlayerId].Cashflow += cashflow;
+                        value.Count++;
+                        value.Cashflow += cashflow;
                     }
                     else
                     {
@@ -1487,19 +1501,19 @@ namespace Mahjong.Controllers
                     dbUtility.Insert(sqlServer, SQL.updateGameDecrementHuangfan, new DbParameter("gameId", gameId));
                 }
             }
-            return RedirectToAction("Game", new { gameId = gameId });
+            return RedirectToAction("Game", new { gameId });
         }
 
         [Authorize(Roles = "Administrator, Mahjong")]
         public ActionResult Finish(int gameId)
         {
             FinishGame(gameId);
-            return RedirectToAction("Game", new { gameId = gameId });
+            return RedirectToAction("Game", new { gameId });
         }
 
         private Dictionary<int, string> GetPlayerBook()
         {
-            Dictionary<int, string> playerBook = new Dictionary<int, string>(); // <id, name>
+            Dictionary<int, string> playerBook = []; // <id, name>
             DataTable dt = dbUtility.Read(sqlServer, SQL.getPlayers);
             foreach (DataRow dr in dt.Rows)
             {
@@ -1528,7 +1542,7 @@ namespace Mahjong.Controllers
             }
         }
 
-        private bool ParseDice(string dice, out int dice1, out int dice2)
+        private static bool ParseDice(string dice, out int dice1, out int dice2)
         {
             if (Int32.TryParse(dice, out int diceNum))
             {
@@ -1546,7 +1560,7 @@ namespace Mahjong.Controllers
             return false;
         }
 
-        private bool DiceIsValid(int dice)
+        private static bool DiceIsValid(int dice)
         {
             return dice >= 1 && dice <= 6;
         }
@@ -1566,7 +1580,7 @@ namespace Mahjong.Controllers
                         continue;
 
                     DataRowCollection roundDetailRows = dbUtility.Read(sqlServer, SQL.getRoundDetail, new DbParameter("@roundId", round.Id)).Rows;
-                    List<RoundDetail> roundDetailList = new();
+                    List<RoundDetail> roundDetailList = [];
                     foreach (DataRow row in roundDetailRows)
                     {
                         RoundDetail roundDetail = GetRoundDetailFromDataRow(row);
@@ -1609,11 +1623,10 @@ namespace Mahjong.Controllers
             return playerId;
         }
 
-        private Dictionary<int, Decimal> GetWinnings(int gameId, Result result, int player1Id, int player2Id, int player3Id, int player4Id, Decimal huaValue, Decimal leziValue)
+        private Dictionary<int, Decimal> GetWinnings(Result result, int player1Id, int player2Id, int player3Id, int player4Id, Decimal huaValue, Decimal leziValue)
         {
             int winnerId = result.WinnerId.GetValueOrDefault();
-            decimal amount = 0;
-            Dictionary<int, Decimal> winnings = new Dictionary<int, Decimal>
+            Dictionary<int, Decimal> winnings = new()
             {
                 { player1Id, 0 },
                 { player2Id, 0 },
@@ -1621,6 +1634,7 @@ namespace Mahjong.Controllers
                 { player4Id, 0 }
             };
             int multiplier = Convert.ToInt32(dbUtility.Read(sqlServer, SQL.getHand, new DbParameter(@"handId", result.HandId)).Rows[0]["multiplier"]);
+            decimal amount;
             if (multiplier == 0)
             {
                 if (result.Lezi)
@@ -1710,7 +1724,7 @@ namespace Mahjong.Controllers
             return winnings;
         }
 
-        private bool UpdatePlayerInList(List<Player> players, int playerId, int order)
+        private static bool UpdatePlayerInList(List<Player> players, int playerId, int order)
         {
             foreach (Player player in players)
             {
@@ -1845,7 +1859,7 @@ namespace Mahjong.Controllers
             return sb.ToString();
         }
 
-        private Round GetRoundFromDataRow(DataRow dr)
+        private static Round GetRoundFromDataRow(DataRow dr)
         {
             return new Round
             {
@@ -1860,7 +1874,7 @@ namespace Mahjong.Controllers
             };
         }
 
-        private RoundDetail GetRoundDetailFromDataRow(DataRow dr)
+        private static RoundDetail GetRoundDetailFromDataRow(DataRow dr)
         {
             return new RoundDetail
             {
@@ -1891,7 +1905,7 @@ namespace Mahjong.Controllers
         {
             RoundResult roundResult = GetRoundInfo(dr, playerBook);
             DataRowCollection roundDetailRows = dbUtility.Read(sqlServer, SQL.getRoundDetail, new DbParameter("@roundId", roundResult.Round.Id)).Rows;
-            foreach(DataRow row in roundDetailRows)
+            foreach (DataRow row in roundDetailRows)
             {
                 RoundDetail roundDetail = GetRoundDetailFromDataRow(row);
                 roundDetail.Description = GetRoundDescription(roundDetail, playerBook);
@@ -1910,9 +1924,9 @@ namespace Mahjong.Controllers
                     {
                         roundResult.Description = $"{playerBook[roundResult.RoundDetails[0].DianpaoId]}一炮三响";
                     }
-                    foreach(RoundDetail roundDetail in roundResult.RoundDetails)
+                    foreach (RoundDetail roundDetail in roundResult.RoundDetails)
                     {
-                        roundDetail.Description = roundDetail.Description.Substring(0, roundDetail.Description.LastIndexOf(','));
+                        roundDetail.Description = roundDetail.Description[..roundDetail.Description.LastIndexOf(',')];
                     }
                 }
                 else if (IsMultipleChengBao(roundResult.RoundDetails[0], roundResult.RoundDetails[1]))
@@ -1920,7 +1934,7 @@ namespace Mahjong.Controllers
                     if (roundResult.RoundDetails.Count == 2)
                     {
                         roundResult.Description = "包十家";
-                        foreach(RoundDetail roundDetail in roundResult.RoundDetails)
+                        foreach (RoundDetail roundDetail in roundResult.RoundDetails)
                         {
                             if (roundDetail.Gangkai && roundDetail.Zimo && roundDetail.Qianggang)
                             {
@@ -1946,7 +1960,7 @@ namespace Mahjong.Controllers
             else
             {
                 RoundDetail rd = roundResult.RoundDetails[0];
-                if(rd.Zimo && rd.Qianggang && rd.ChengbaoId != -1)
+                if (rd.Zimo && rd.Qianggang && rd.ChengbaoId != -1)
                 {
                     roundResult.Description = "包八家";
                 }
@@ -1962,10 +1976,10 @@ namespace Mahjong.Controllers
 
         private List<GameHistory> GetGameHistory(bool combineGameWithSubs = true)
         {
-            List<GameHistory> gameHistories = new List<GameHistory>();
+            List<GameHistory> gameHistories = [];
             DataTable dt = dbUtility.Read(sqlServer, SQL.getGameHistoryInfo);
-            List<int> gameIds = new List<int>();
-            Dictionary<int, DataRow> historyTable = new Dictionary<int, DataRow>();
+            List<int> gameIds = [];
+            Dictionary<int, DataRow> historyTable = [];
 
             foreach (DataRow dr in dt.Rows)
             {
@@ -1991,8 +2005,8 @@ namespace Mahjong.Controllers
                 int numOfRounds = Convert.ToInt32(dr["numOfRounds"]);
                 decimal huaValue = Convert.ToDecimal(dr["hua"]);
                 decimal leziValue = Convert.ToDecimal(dr["lezi"]);
-                List<int> players = new List<int>();
-                Dictionary<int, decimal> balanceSheet = new Dictionary<int, decimal>();
+                List<int> players = [];
+                Dictionary<int, decimal> balanceSheet = [];
 
                 int player1Id = Convert.ToInt32(dr["player1_id"]);
                 int player2Id = Convert.ToInt32(dr["player2_id"]);
@@ -2073,7 +2087,7 @@ namespace Mahjong.Controllers
 
         private List<Player> GetAllPlayers()
         {
-            List<Player> players = new List<Player>();
+            List<Player> players = [];
             DataTable dt = dbUtility.Read(sqlServer, SQL.getPlayers);
             foreach (DataRow dr in dt.Rows)
             {
@@ -2089,9 +2103,9 @@ namespace Mahjong.Controllers
         private List<Player> GetAllPlayersByRoundsPlayed()
         {
             List<Player> players = GetAllPlayers();
-            List<(Player player, int count)> playerList = new List<(Player, int)>();
+            List<(Player player, int count)> playerList = [];
 
-            foreach(Player player in players)
+            foreach (Player player in players)
             {
                 int count = 0;
                 var rounds = dbUtility.ReadFirstRow(sqlServer, SQL.getNumOfRoundsPlayed, new DbParameter("@player_id", player.Id))["roundCount"];
@@ -2100,12 +2114,12 @@ namespace Mahjong.Controllers
                 playerList.Add((player, count));
             }
 
-            return playerList.OrderByDescending(t => t.count).ThenBy(t => t.player.Name).Select(t => t.player).ToList();
+            return [.. playerList.OrderByDescending(t => t.count).ThenBy(t => t.player.Name).Select(t => t.player)];
         }
 
         private List<Hand> GetHands()
         {
-            List<Hand> hands = new List<Hand>();
+            List<Hand> hands = [];
             foreach (DataRow dr in dbUtility.Read(sqlServer, SQL.getHands).Rows)
             {
                 hands.Add(new Hand { Id = Convert.ToInt32(dr["id"]), Name = dr["name"].ToString() });
@@ -2113,7 +2127,7 @@ namespace Mahjong.Controllers
             return hands;
         }
 
-        private string FindDelta(DataRow dr, int playerId)
+        private static string FindDelta(DataRow dr, int playerId)
         {
             if (Convert.ToInt32(dr["player1_id"]) == playerId)
                 return "delta1";
@@ -2126,11 +2140,10 @@ namespace Mahjong.Controllers
             return "";
         }
 
-        private void UpdateHistoryAttr(Dictionary<int, Decimal> balanceSheet, List<int> players, int playerId, Decimal delta)
+        private static void UpdateHistoryAttr(Dictionary<int, Decimal> balanceSheet, List<int> players, int playerId, Decimal delta)
         {
-            if (!balanceSheet.ContainsKey(playerId))
+            if (balanceSheet.TryAdd(playerId, delta))
             {
-                balanceSheet.Add(playerId, delta);
                 players.Add(playerId);
             }
             else
@@ -2139,23 +2152,24 @@ namespace Mahjong.Controllers
             }
         }
 
-        private void AddOrIncrement<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key, TValue val) 
+        private static void AddOrIncrement<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key, TValue val)
         {
-            Type[] types = { typeof(int), typeof(decimal) };
+            Type[] types = [typeof(int), typeof(decimal)];
             if (!types.Contains(val.GetType()))
                 throw new ArgumentException($"{val.GetType()} not supported");
 
-            if (dict.ContainsKey(key))
-                dict[key] = (dynamic)dict[key] + (dynamic)val;
+            if (dict.TryGetValue(key, out TValue value))
+                dict[key] = (dynamic)value + (dynamic)val;
             else
                 dict.Add(key, val);
         }
 
-        private RoundResult GetRoundInfo(DataRow dr, Dictionary<int, string> playerBook)
+        private static RoundResult GetRoundInfo(DataRow dr, Dictionary<int, string> playerBook)
         {
-            RoundResult roundInfo = new() { 
+            RoundResult roundInfo = new()
+            {
                 Round = GetRoundFromDataRow(dr),
-                RoundDetails = new(),
+                RoundDetails = [],
                 Description = ""
             };
             if (dr.Table.Columns.Contains("dice1") && dr.Table.Columns.Contains("dice2") && dr["dice1"] != DBNull.Value && dr["dice2"] != DBNull.Value)
@@ -2177,10 +2191,10 @@ namespace Mahjong.Controllers
             return gameId;
         }
 
-        private List<RoundRecord> GetStreakRecords(Dictionary<int, Dictionary<int, RoundRecord>> streak, Dictionary<int, string> gameDates, int n)
+        private static List<RoundRecord> GetStreakRecords(Dictionary<int, Dictionary<int, RoundRecord>> streak, Dictionary<int, string> gameDates, int n)
         {
             // consolidate
-            List<RoundRecord> streakRecords = new();
+            List<RoundRecord> streakRecords = [];
             foreach (var v in streak.Values)
             {
                 foreach (var r in v.Values)
@@ -2190,10 +2204,10 @@ namespace Mahjong.Controllers
             }
 
             // sort
-            streakRecords = streakRecords.OrderByDescending(s => s.Count).ThenBy(s => s.PlayerName).ToList();
+            streakRecords = [.. streakRecords.OrderByDescending(s => s.Count).ThenBy(s => s.PlayerName)];
 
             // increase n because of tied records
-            while (n < streakRecords.Count())
+            while (n < streakRecords.Count)
             {
                 if (streakRecords[n].Count != streakRecords[n - 1].Count)
                     break;
@@ -2201,13 +2215,13 @@ namespace Mahjong.Controllers
             }
 
             // take the records needed
-            streakRecords = streakRecords.Take(n).ToList();
+            streakRecords = [.. streakRecords.Take(n)];
 
             // make rank
             if (streakRecords.Count > 0)
             {
                 streakRecords[0].Rank = 1;
-                for (int i = 1; i < streakRecords.Count(); i++)
+                for (int i = 1; i < streakRecords.Count; i++)
                 {
                     if (streakRecords[i].Count == streakRecords[i - 1].Count)
                     {
@@ -2230,12 +2244,12 @@ namespace Mahjong.Controllers
                 roundRecord.Payouts.Sort((p1, p2) => Convert.ToInt32(p2.Cashflow * 100 - p1.Cashflow * 100));
             }
 
-            return streakRecords.OrderByDescending(s => s.Count).ThenByDescending(s => s.Payouts.Count).ThenByDescending(s => s.Payouts.Max(p => p.Cashflow)).ThenBy(s => s.PlayerName).ToList();
+            return [.. streakRecords.OrderByDescending(s => s.Count).ThenByDescending(s => s.Payouts.Count).ThenByDescending(s => s.Payouts.Max(p => p.Cashflow)).ThenBy(s => s.PlayerName)];
         }
 
-        private void EndStreaks(Dictionary<int, Dictionary<int, RoundRecord>> recordBook, Dictionary<int, StreakInfo> streaks, Dictionary<int, string> playerBook, int gameId, int endPlayerId = -1)
+        private static void EndStreaks(Dictionary<int, Dictionary<int, RoundRecord>> recordBook, Dictionary<int, StreakInfo> streaks, Dictionary<int, string> playerBook, int gameId, int endPlayerId = -1)
         {
-            int[] ids = endPlayerId == -1 ? streaks.Keys.ToArray() : new int[] { endPlayerId };
+            int[] ids = endPlayerId == -1 ? [.. streaks.Keys] : [endPlayerId];
 
             foreach (int playerId in ids)
             {
@@ -2243,27 +2257,28 @@ namespace Mahjong.Controllers
                 if (count >= 3)
                 {
                     // only save 3peat or better
-                    GamePayout payout = new GamePayout() {
+                    GamePayout payout = new()
+                    {
                         GameId = gameId,
                         Cashflow = streaks[playerId].Cashflow
                     };
 
                     if (recordBook.ContainsKey(playerId))
                     {
-                        if (recordBook[playerId].ContainsKey(count))
+                        if (recordBook[playerId].TryGetValue(count, out RoundRecord value))
                         {
-                            recordBook[playerId][count].Payouts.Add(payout);
+                            value.Payouts.Add(payout);
                         }
                         else
                         {
-                            recordBook[playerId].Add(count, new RoundRecord() { Payouts = new List<GamePayout>() { payout }, PlayerName = playerBook[playerId], Count = streaks[playerId].Count });
+                            recordBook[playerId].Add(count, new RoundRecord() { Payouts = [payout], PlayerName = playerBook[playerId], Count = streaks[playerId].Count });
                         }
                     }
                     else
                     {
                         Dictionary<int, RoundRecord> record = new()
                         {
-                            { count, new RoundRecord() { Payouts = new List<GamePayout>() { payout }, PlayerName = playerBook[playerId], Count = streaks[playerId].Count } }
+                            { count, new RoundRecord() { Payouts = [payout], PlayerName = playerBook[playerId], Count = streaks[playerId].Count } }
                         };
                         recordBook[playerId] = record;
                     }
@@ -2281,7 +2296,7 @@ namespace Mahjong.Controllers
                 );
         }
 
-        private bool IsYiPaoLiangXiang(RoundDetail r1, RoundDetail r2)
+        private static bool IsYiPaoLiangXiang(RoundDetail r1, RoundDetail r2)
         {
             return Math.Abs((r1.Created - r2.Created).TotalSeconds) < 90
                 && r1.DianpaoId != -1
@@ -2294,7 +2309,7 @@ namespace Mahjong.Controllers
                 && r1.WinnerId != r2.WinnerId;
         }
 
-        private bool IsMultipleChengBao(RoundDetail r1, RoundDetail r2)
+        private static bool IsMultipleChengBao(RoundDetail r1, RoundDetail r2)
         {
             bool result = Math.Abs((r1.Created - r2.Created).TotalSeconds) < 60
                 && r1.Zimo
@@ -2319,11 +2334,10 @@ namespace Mahjong.Controllers
 
         private string GetRealPlayerMessage(DateTime lastGameDate)
         {
-            return $"*仅显示盘数超过 {roundCountThreshold} 盘以及在 {lastGameDate.AddDays(-lastPlayDateThreshold).ToShortDateString()}(最后一盘前{lastPlayDateThreshold}天) 之后有记录的玩家 ";
+            return $"*仅显示盘数超过 {roundCountThreshold} 盘以及在 {lastGameDate.AddDays(-lastPlayDateThreshold):d}(最后一盘前{lastPlayDateThreshold}天) 之后有记录的玩家 ";
         }
 
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private static readonly DbUtility dbUtility = DbFactory.GetDbUtility(Db.SQLite);
-        private static readonly string sqlServer = ConfigurationManager.ConnectionStrings["Mahjong"].ConnectionString;
     }
 }

@@ -53,7 +53,7 @@
         {
             <div class="col-lg-3">
                 <h2>本局结果</h2>
-                @using (Html.BeginForm("Game", "Mahjong", new { gameId = (int)ViewData["gameId"] }, FormMethod.Post, new { id = "result_form" }))
+                @using (Html.BeginForm("Game", "Mahjong", new { gameId = (int)ViewData["gameId"] }, FormMethod.Post, antiforgery: null, htmlAttributes: new { id = "result_form" }))
                 {
                     @Html.AntiForgeryToken()
                     <b>骰子:</b>
@@ -351,7 +351,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                @using (Html.BeginForm("Edit", "Mahjong", new { gameId = (int)ViewData["gameId"] }, FormMethod.Post, new { id = "edit_form" }))
+                @using (Html.BeginForm("Edit", "Mahjong", new { gameId = (int)ViewData["gameId"] }, FormMethod.Post, antiforgery: null, htmlAttributes: new { id = "edit_form" }))
                 {
                     @Html.AntiForgeryToken()
                     <div class="modal-body">
@@ -622,7 +622,7 @@
     </script>
     <script type="text/javascript">
         $(window).on('load', function () {
-            if (!@Json.Encode(finished) && @Json.Encode(User.IsInRole("Administrator") || @User.IsInRole("Mahjong"))){
+            if (@(!finished ? "true" : "false") && @((User.IsInRole("Administrator") || User.IsInRole("Mahjong")) ? "true" : "false")){
                 $('#dice-modal').modal('show');
             }
         });
@@ -630,7 +630,7 @@
     <script type="text/javascript">
         $(".two-dice").click(function (e) {
             e.preventDefault();
-            if (!@Json.Encode(finished)){
+            if (@(!finished ? "true" : "false")){
                 var dice = $(this).attr("id");
                 //$.ajax({
                 //    success: function () { alert("Dice " + dice + " Entered"); }
