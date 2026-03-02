@@ -1,21 +1,19 @@
-﻿using Mahjong.Models;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.Identity.Owin;
-using PagedList;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Web;
-using System.Web.Mvc;
+using Mahjong.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace Mahjong.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager) : Controller
     {
-        private ApplicationUserManager _userManager;
-        private ApplicationRoleManager _roleManager;
         // Controllers
         // GET: /Admin/
         [Authorize(Roles = "Administrator")]
@@ -37,38 +35,35 @@ namespace Mahjong.Controllers
                     intPage = page ?? 1;
                 }
                 ViewBag.CurrentFilter = searchStringUserNameOrEmail;
-                List<ExpandedUser> col_User = new List<ExpandedUser>();
+                List<ExpandedUser> col_User = [];
                 int intSkip = (intPage - 1) * intPageSize;
                 List<ApplicationUser> result;
                 if (searchStringUserNameOrEmail == null || searchStringUserNameOrEmail == "")
                 {
                     intTotalPageCount = UserManager.Users.Count();
-                    result = UserManager.Users
+                    result = [.. UserManager.Users
                         .OrderBy(x => x.UserName)
                         .Skip(intSkip)
-                        .Take(intPageSize)
-                        .ToList();
+                        .Take(intPageSize)];
                 }
                 else
                 {
                     intTotalPageCount = UserManager.Users
                         .Where(x => x.UserName.Contains(searchStringUserNameOrEmail))
                         .Count();
-                    result = UserManager.Users
+                    result = [.. UserManager.Users
                         .Where(x => x.UserName.Contains(searchStringUserNameOrEmail))
                         .OrderBy(x => x.UserName)
                         .Skip(intSkip)
-                        .Take(intPageSize)
-                        .ToList();
-                    }
+                        .Take(intPageSize)];
+                }
 
                 foreach (var item in result)
                 {
-                    ExpandedUser objUser = new ExpandedUser
+                    ExpandedUser objUser = new()
                     {
                         UserName = item.UserName,
-                        Email = item.Email,
-                        LockoutEndDateUtc = item.LockoutEndDateUtc
+                        LockoutEndDateUtc = item.LockoutEnd?.UtcDateTime
                     };
                     col_User.Add(objUser);
                 }
@@ -80,7 +75,7 @@ namespace Mahjong.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, "Error: " + ex);
-                List<ExpandedUser> col_User = new List<ExpandedUser>();
+                List<ExpandedUser> col_User = [];
                 return View(col_User.ToPagedList(1, 25));
             }
         }
@@ -92,13 +87,12 @@ namespace Mahjong.Controllers
         #region public ActionResult ViewAllRoles()
         public ActionResult ViewAllRoles()
         {
-            var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
-            List<Role> colRole = (from objRole in roleManager.Roles
+            List<Role> colRole = [.. (from objRole in RoleManager.Roles
                                   select new Role
                                   {
                                       Id = objRole.Id,
                                       RoleName = objRole.Name
-                                  }).ToList();
+                                  })];
             return View(colRole);
         }
         #endregion
@@ -108,7 +102,7 @@ namespace Mahjong.Controllers
         #region public ActionResult AddRole()
         public ActionResult AddRole()
         {
-            Role objRole = new Role();
+            Role objRole = new();
             return View(objRole);
         }
         #endregion
@@ -123,7 +117,7 @@ namespace Mahjong.Controllers
             {
                 if (paramRole == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
                 var RoleName = paramRole.RoleName.Trim();
                 if (RoleName == "")
@@ -131,10 +125,9 @@ namespace Mahjong.Controllers
                     throw new Exception("No RoleName");
                 }
                 // Create Role
-                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
-                if (!roleManager.RoleExists(RoleName))
+                if (!RoleManager.RoleExistsAsync(RoleName).Result)
                 {
-                    roleManager.Create(new IdentityRole(RoleName));
+                    RoleManager.CreateAsync(new IdentityRole(RoleName)).Wait();
                 }
                 return Redirect("~/Admin/ViewAllRoles");
             }
@@ -154,14 +147,13 @@ namespace Mahjong.Controllers
             {
                 if (RoleName == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
-                if (RoleName.ToLower() == "Administrator")
+                if (RoleName.Equals("Administrator", StringComparison.CurrentCultureIgnoreCase))
                 {
                     throw new Exception(String.Format("Cannot delete {0} Role.", RoleName));
                 }
-                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
-                var UsersInRole = roleManager.FindByName(RoleName).Users.Count();
+                var UsersInRole = UserManager.GetUsersInRoleAsync(RoleName).Result.Count;
                 if (UsersInRole > 0)
                 {
                     throw new Exception(
@@ -170,12 +162,12 @@ namespace Mahjong.Controllers
                             RoleName)
                             );
                 }
-                var objRoleToDelete = (from objRole in roleManager.Roles
+                var objRoleToDelete = (from objRole in RoleManager.Roles
                                        where objRole.Name == RoleName
                                        select objRole).FirstOrDefault();
                 if (objRoleToDelete != null)
                 {
-                    roleManager.Delete(objRoleToDelete);
+                    RoleManager.DeleteAsync(objRoleToDelete).Wait();
                 }
                 else
                 {
@@ -185,24 +177,23 @@ namespace Mahjong.Controllers
                             RoleName)
                             );
                 }
-                List<Role> colRole = (from objRole in roleManager.Roles
+                List<Role> colRole = [.. (from objRole in RoleManager.Roles
                                       select new Role
                                       {
                                           Id = objRole.Id,
                                           RoleName = objRole.Name
-                                      }).ToList();
+                                      })];
                 return View("ViewAllRoles", colRole);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, "Error: " + ex);
-                var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
-                List<Role> colRole = (from objRole in roleManager.Roles
+                List<Role> colRole = [.. (from objRole in RoleManager.Roles
                                       select new Role
                                       {
                                           Id = objRole.Id,
                                           RoleName = objRole.Name
-                                      }).ToList();
+                                      })];
                 return View("ViewAllRoles", colRole);
             }
         }
@@ -214,7 +205,7 @@ namespace Mahjong.Controllers
         #region public ActionResult Create()
         public ActionResult Create()
         {
-            ExpandedUser objExpandedUser = new ExpandedUser();
+            ExpandedUser objExpandedUser = new();
             ViewBag.Roles = GetAllRolesAsSelectList();
             return View(objExpandedUser);
         }
@@ -230,7 +221,7 @@ namespace Mahjong.Controllers
             {
                 if (paramExpandedUser == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
                 var Email = paramExpandedUser.Email.Trim();
                 var UserName = paramExpandedUser.UserName.Trim();
@@ -246,14 +237,14 @@ namespace Mahjong.Controllers
 
                 // Create user
                 var objNewAdminUser = new ApplicationUser { UserName = UserName, Email = Email };
-                var AdminUserCreateResult = UserManager.Create(objNewAdminUser, Password);
+                var AdminUserCreateResult = UserManager.CreateAsync(objNewAdminUser, Password).Result;
                 if (AdminUserCreateResult.Succeeded == true)
                 {
                     string strNewRole = Convert.ToString(Request.Form["Roles"]);
                     if (strNewRole != "0")
                     {
                         // Put user in role
-                        UserManager.AddToRole(objNewAdminUser.Id, strNewRole);
+                        UserManager.AddToRoleAsync(objNewAdminUser, strNewRole).Wait();
                     }
                     return Redirect("~/Admin/Index");
                 }
@@ -280,12 +271,12 @@ namespace Mahjong.Controllers
         {
             if (UserName == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return new StatusCodeResult((int)HttpStatusCode.BadRequest);
             }
             ExpandedUser objExpandedUser = GetUser(UserName);
             if (objExpandedUser == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return View(objExpandedUser);
         }
@@ -301,12 +292,12 @@ namespace Mahjong.Controllers
             {
                 if (paramExpandedUser == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
                 ExpandedUser objExpandedUserDTO = UpdateUser(paramExpandedUser);
                 if (objExpandedUserDTO == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 return Redirect("~/Admin/Index");
             }
@@ -326,9 +317,9 @@ namespace Mahjong.Controllers
             {
                 if (UserName == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
-                if (UserName.ToLower() == this.User.Identity.Name.ToLower())
+                if (UserName.Equals(this.User.Identity.Name, StringComparison.CurrentCultureIgnoreCase))
                 {
                     ModelState.AddModelError(
                         string.Empty, "Error: Cannot delete the current user");
@@ -337,7 +328,7 @@ namespace Mahjong.Controllers
                 ExpandedUser objExpandedUser = GetUser(UserName);
                 if (objExpandedUser == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 else
                 {
@@ -359,14 +350,14 @@ namespace Mahjong.Controllers
         {
             if (UserName == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return new StatusCodeResult((int)HttpStatusCode.BadRequest);
             }
             UserName = UserName.ToLower();
             // Check that we have an actual user
             ExpandedUser objExpandedUser = GetUser(UserName);
             if (objExpandedUser == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             UserAndRoles objUserAndRoles = GetUserAndRoles(UserName);
             return View(objUserAndRoles);
@@ -383,16 +374,16 @@ namespace Mahjong.Controllers
             {
                 if (paramUserAndRoles == null)
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
                 string UserName = paramUserAndRoles.UserName;
                 string strNewRole = Convert.ToString(Request.Form["AddRole"]);
                 if (strNewRole != "No Roles Found")
                 {
                     // Go get the User
-                    ApplicationUser user = UserManager.FindByName(UserName);
+                    ApplicationUser user = UserManager.FindByNameAsync(UserName).Result;
                     // Put user in role
-                    UserManager.AddToRole(user.Id, strNewRole);
+                    UserManager.AddToRoleAsync(user, strNewRole).Wait();
                 }
                 ViewBag.AddRole = new SelectList(RolesUserIsNotIn(UserName));
                 UserAndRoles objUserAndRoles = GetUserAndRoles(UserName);
@@ -414,26 +405,26 @@ namespace Mahjong.Controllers
             {
                 if ((UserName == null) || (RoleName == null))
                 {
-                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    return new StatusCodeResult((int)HttpStatusCode.BadRequest);
                 }
                 UserName = UserName.ToLower();
                 // Check that we have an actual user
                 ExpandedUser objExpandedUser = GetUser(UserName);
                 if (objExpandedUser == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
-                if (UserName.ToLower() == this.User.Identity.Name.ToLower() && RoleName == "Administrator")
+                if (UserName.Equals(this.User.Identity.Name, StringComparison.CurrentCultureIgnoreCase) && RoleName == "Administrator")
                 {
                     ModelState.AddModelError(string.Empty, "Error: Cannot delete Administrator Role for the current user");
                 }
                 // Go get the User
-                ApplicationUser user = UserManager.FindByName(UserName);
+                ApplicationUser user = UserManager.FindByNameAsync(UserName).Result;
                 // Remove User from role
-                UserManager.RemoveFromRoles(user.Id, RoleName);
-                UserManager.Update(user);
+                UserManager.RemoveFromRoleAsync(user, RoleName).Wait();
+                UserManager.UpdateAsync(user).Wait();
                 ViewBag.AddRole = new SelectList(RolesUserIsNotIn(UserName));
-                return RedirectToAction("EditRoles", new { UserName = UserName });
+                return RedirectToAction("EditRoles", new { UserName });
             }
             catch (Exception ex)
             {
@@ -446,33 +437,30 @@ namespace Mahjong.Controllers
         #endregion
 
         // Utility
-        #region public ApplicationUserManager UserManager
-        public ApplicationUserManager UserManager
+        // Utility
+        #region public UserManager<ApplicationUser> UserManager
+        public UserManager<ApplicationUser> UserManager
         {
             get
             {
-                return _userManager ??
-                    HttpContext.GetOwinContext()
-                    .GetUserManager<ApplicationUserManager>();
+                return userManager;
             }
             private set
             {
-                _userManager = value;
+                userManager = value;
             }
         }
         #endregion
-        #region public ApplicationRoleManager RoleManager
-        public ApplicationRoleManager RoleManager
+        #region public RoleManager<IdentityRole> RoleManager
+        public RoleManager<IdentityRole> RoleManager
         {
             get
             {
-                return _roleManager ??
-                    HttpContext.GetOwinContext()
-                    .GetUserManager<ApplicationRoleManager>();
+                return roleManager;
             }
             private set
             {
-                _roleManager = value;
+                roleManager = value;
             }
         }
         #endregion
@@ -480,10 +468,8 @@ namespace Mahjong.Controllers
         #region private List<SelectListItem> GetAllRolesAsSelectList()
         private List<SelectListItem> GetAllRolesAsSelectList()
         {
-            List<SelectListItem> SelectRoleListItems = new List<SelectListItem>();
-            var roleManager =
-                new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
-            var colRoleSelectList = roleManager.Roles.OrderBy(x => x.Name).ToList();
+            List<SelectListItem> SelectRoleListItems = [];
+            var colRoleSelectList = RoleManager.Roles.OrderBy(x => x.Name).ToList();
             SelectRoleListItems.Add(
                 new SelectListItem
                 {
@@ -506,16 +492,12 @@ namespace Mahjong.Controllers
         #region private ExpandedUser GetUser(string paramUserName)
         private ExpandedUser GetUser(string paramUserName)
         {
-            ExpandedUser objExpandedUser = new ExpandedUser();
+            ExpandedUser objExpandedUser = new();
 
-            var result = UserManager.FindByName(paramUserName);
-
-            // If we could not find the user, throw an exception
-            if (result == null) throw new Exception("Could not find the User");
-
+            var result = UserManager.FindByNameAsync(paramUserName).Result ?? throw new Exception("Could not find the User");
             objExpandedUser.UserName = result.UserName;
             objExpandedUser.Email = result.Email;
-            objExpandedUser.LockoutEndDateUtc = result.LockoutEndDateUtc;
+            objExpandedUser.LockoutEndDateUtc = result.LockoutEnd?.UtcDateTime;
             objExpandedUser.AccessFailedCount = result.AccessFailedCount;
             objExpandedUser.PhoneNumber = result.PhoneNumber;
 
@@ -526,33 +508,28 @@ namespace Mahjong.Controllers
         #region private ExpandedUser UpdateUser(ExpandedUser objExpandedUser)
         private ExpandedUser UpdateUser(ExpandedUser paramExpandedUser)
         {
-            ApplicationUser result = UserManager.FindByName(paramExpandedUser.UserName);
-            // If we could not find the user, throw an exception
-            if (result == null)
-            {
-                throw new Exception("Could not find the User");
-            }
+            ApplicationUser result = UserManager.FindByNameAsync(paramExpandedUser.UserName).Result ?? throw new Exception("Could not find the User");
             result.Email = paramExpandedUser.Email;
             // Lets check if the account needs to be unlocked
-            if (UserManager.IsLockedOut(result.Id))
+            if (UserManager.IsLockedOutAsync(result).Result)
             {
                 // Unlock user
-                UserManager.ResetAccessFailedCountAsync(result.Id);
+                UserManager.ResetAccessFailedCountAsync(result).Wait();
             }
-            UserManager.Update(result);
+            UserManager.UpdateAsync(result).Wait();
             // Was a password sent across?
             if (!string.IsNullOrEmpty(paramExpandedUser.Password))
             {
                 // Remove current password
-                var removePassword = UserManager.RemovePassword(result.Id);
+                var removePassword = UserManager.RemovePasswordAsync(result).Result;
                 if (removePassword.Succeeded)
                 {
                     // Add new password
                     var AddPassword =
-                        UserManager.AddPassword(result.Id, paramExpandedUser.Password);
-                    if (AddPassword.Errors.Count() > 0)
+                        UserManager.AddPasswordAsync(result, paramExpandedUser.Password).Result;
+                    if (AddPassword.Errors.Any())
                     {
-                        throw new Exception(AddPassword.Errors.FirstOrDefault());
+                        throw new Exception(AddPassword.Errors.FirstOrDefault().Description);
                     }
                 }
             }
@@ -562,15 +539,10 @@ namespace Mahjong.Controllers
         #region private void DeleteUser(ExpandedUser paramExpandedUser)
         private void DeleteUser(ExpandedUser paramExpandedUser)
         {
-            ApplicationUser user = UserManager.FindByName(paramExpandedUser.UserName);
-            // If we could not find the user, throw an exception
-            if (user == null)
-            {
-                throw new Exception("Could not find the User");
-            }
-            UserManager.RemoveFromRoles(user.Id, UserManager.GetRoles(user.Id).ToArray());
-            UserManager.Update(user);
-            UserManager.Delete(user);
+            ApplicationUser user = UserManager.FindByNameAsync(paramExpandedUser.UserName).Result ?? throw new Exception("Could not find the User");
+            UserManager.RemoveFromRolesAsync(user, [.. UserManager.GetRolesAsync(user).Result]).Wait();
+            UserManager.UpdateAsync(user).Wait();
+            UserManager.DeleteAsync(user).Wait();
         }
         #endregion
 
@@ -578,20 +550,20 @@ namespace Mahjong.Controllers
         private UserAndRoles GetUserAndRoles(string UserName)
         {
             // Go get the User
-            ApplicationUser user = UserManager.FindByName(UserName);
-            List<UserRole> colUserRole = (from objRole in UserManager.GetRoles(user.Id)
+            ApplicationUser user = UserManager.FindByNameAsync(UserName).Result;
+            List<UserRole> colUserRole = [.. (from objRole in UserManager.GetRolesAsync(user).Result
                                           select new UserRole
                                           {
                                               RoleName = objRole,
                                               UserName = UserName
-                                          }).ToList();
-            if (colUserRole.Count() == 0)
+                                          })];
+            if (colUserRole.Count == 0)
             {
                 colUserRole.Add(new UserRole { RoleName = "No Roles Found" });
             }
             ViewBag.AddRole = new SelectList(RolesUserIsNotIn(UserName));
             // Create UserRolesAndPermissionsDTO
-            UserAndRoles objUserAndRoles = new UserAndRoles
+            UserAndRoles objUserAndRoles = new()
             {
                 UserName = UserName,
                 colUserRole = colUserRole
@@ -605,17 +577,12 @@ namespace Mahjong.Controllers
             // Get roles the user is not in
             var colAllRoles = RoleManager.Roles.Select(x => x.Name).ToList();
             // Go get the roles for an individual
-            ApplicationUser user = UserManager.FindByName(UserName);
-            // If we could not find the user, throw an exception
-            if (user == null)
-            {
-                throw new Exception("Could not find the User");
-            }
-            var colRolesForUser = UserManager.GetRoles(user.Id).ToList();
+            ApplicationUser user = UserManager.FindByNameAsync(UserName).Result ?? throw new Exception("Could not find the User");
+            var colRolesForUser = UserManager.GetRolesAsync(user).Result.ToList();
             var colRolesUserInNotIn = (from objRole in colAllRoles
                                        where !colRolesForUser.Contains(objRole)
                                        select objRole).ToList();
-            if (colRolesUserInNotIn.Count() == 0)
+            if (colRolesUserInNotIn.Count == 0)
             {
                 colRolesUserInNotIn.Add("No Roles Found");
             }

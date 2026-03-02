@@ -28,7 +28,7 @@
         function getPlayers(id) {
             var select = document.getElementById(id);
             if (select.options.length <= 1) {
-                var _players = @Html.Raw(Json.Encode(players));
+                var _players = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(players));
                 var selectedPlayers = getSelectedPlayerIds();
 
                 if (select.options.length == 0) {
@@ -126,12 +126,12 @@
         <br /><p></p>
 
         <b>花价:</b><br />
-        @Html.TextBoxFor(m => m.HuaValue, new { Type = "Number", Step = "0.1", Value = "0.5" })
+        @Html.TextBoxFor(m => m.HuaValue, new { type = "number", step = "0.1" })
         @Html.ValidationMessageFor(m => m.HuaValue, "", new { @class = "alert" })
         <br /><p></p>
 
         <b>勒子价:</b><br />
-        @Html.TextBoxFor(m => m.LeziValue, new { Type = "Number", Value = "5" })
+        @Html.TextBoxFor(m => m.LeziValue, new { type = "number" })
         @Html.ValidationMessageFor(m => m.LeziValue, "", new { @class = "alert" })
         <br /><p></p>
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
+using System.Linq;
+using Microsoft.Data.SqlClient;
+using Serilog;
 
 namespace Mahjong.Utility
 {
@@ -16,11 +18,11 @@ namespace Mahjong.Utility
     {
         public static DbUtility GetDbUtility(Db db)
         {
-            if(db == Db.SQLServer)
+            if (db == Db.SQLServer)
             {
                 return new SqlServerUtility();
             }
-            else if(db == Db.SQLite)
+            else if (db == Db.SQLite)
             {
                 return new SqliteUtility();
             }
@@ -52,39 +54,36 @@ namespace Mahjong.Utility
         }
 
         public static readonly int Zero = 0;
-        public static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
     }
 
-    public class SqlServerUtility: DbUtility
+    public class SqlServerUtility : DbUtility
     {
         public override DataTable Read(string db, string sql, params DbParameter[] parameters)
         {
-            DataTable dt = new DataTable();
+            DataTable dt = new();
 
             try
             {
-                using (SqlConnection sqlConn = new SqlConnection(db))
+                using SqlConnection sqlConn = new(db);
+                SqlCommand sqlCommand = sqlConn.CreateCommand();
+                sqlCommand.CommandText = sql;
+
+                if (parameters.Length > 0)
                 {
-                    SqlCommand sqlCommand = sqlConn.CreateCommand();
-                    sqlCommand.CommandText = sql;
-
-                    if (parameters.Length > 0)
+                    foreach (SqlParameter parameter in parameters.Cast<SqlParameter>())
                     {
-                        foreach (SqlParameter parameter in parameters)
-                        {
-                            sqlCommand.Parameters.Add(parameter);
-                        }
+                        sqlCommand.Parameters.Add(parameter);
                     }
-
-                    sqlConn.Open();
-                    SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand);
-                    adapter.Fill(dt);
                 }
+
+                sqlConn.Open();
+                SqlDataAdapter adapter = new(sqlCommand);
+                adapter.Fill(dt);
             }
             catch (Exception ex)
             {
-                log.Error($"Exception when excuting {sql} on {db}");
-                log.Error(ex);
+                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return dt;
@@ -94,27 +93,24 @@ namespace Mahjong.Utility
         {
             try
             {
-                using (SqlConnection sqlConn = new SqlConnection(db))
+                using SqlConnection sqlConn = new(db);
+                SqlCommand sqlCommand = sqlConn.CreateCommand();
+                sqlCommand.CommandText = sql;
+
+                if (parameters.Length > 0)
                 {
-                    SqlCommand sqlCommand = sqlConn.CreateCommand();
-                    sqlCommand.CommandText = sql;
-
-                    if (parameters.Length > 0)
+                    foreach (SqlParameter parameter in parameters.Cast<SqlParameter>())
                     {
-                        foreach (SqlParameter parameter in parameters)
-                        {
-                            sqlCommand.Parameters.Add(parameter);
-                        }
+                        sqlCommand.Parameters.Add(parameter);
                     }
-
-                    sqlConn.Open();
-                    return sqlCommand.ExecuteNonQuery();
                 }
+
+                sqlConn.Open();
+                return sqlCommand.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
-                log.Error($"Exception when excuting {sql} on {db}");
-                log.Error(ex);
+                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;
@@ -124,27 +120,24 @@ namespace Mahjong.Utility
         {
             try
             {
-                using (SqlConnection sqlConn = new SqlConnection(db))
+                using SqlConnection sqlConn = new(db);
+                SqlCommand sqlCommand = sqlConn.CreateCommand();
+                sqlCommand.CommandText = sql;
+
+                if (parameters.Length > 0)
                 {
-                    SqlCommand sqlCommand = sqlConn.CreateCommand();
-                    sqlCommand.CommandText = sql;
-
-                    if (parameters.Length > 0)
+                    foreach (SqlParameter parameter in parameters.Cast<SqlParameter>())
                     {
-                        foreach (SqlParameter parameter in parameters)
-                        {
-                            sqlCommand.Parameters.Add(parameter);
-                        }
+                        sqlCommand.Parameters.Add(parameter);
                     }
-
-                    sqlConn.Open();
-                    return (int)sqlCommand.ExecuteScalar();
                 }
+
+                sqlConn.Open();
+                return (int)sqlCommand.ExecuteScalar();
             }
             catch (Exception ex)
             {
-                log.Error($"Exception when excuting {sql} on {db}");
-                log.Error(ex);
+                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;
@@ -162,32 +155,29 @@ namespace Mahjong.Utility
         /// <returns>Data in a DataTable</returns>
         public override DataTable Read(string db, string sql, params DbParameter[] parameters)
         {
-            DataTable dt = new DataTable();
+            DataTable dt = new();
 
             try
             {
-                using (SQLiteConnection conn = new SQLiteConnection(db))
+                using SQLiteConnection conn = new(db);
+                SQLiteCommand command = conn.CreateCommand();
+                command.CommandText = sql;
+
+                if (parameters.Length > 0)
                 {
-                    SQLiteCommand command = conn.CreateCommand();
-                    command.CommandText = sql;
-
-                    if (parameters.Length > 0)
+                    foreach (SQLiteParameter parameter in parameters.Cast<SQLiteParameter>())
                     {
-                        foreach (SQLiteParameter parameter in parameters)
-                        {
-                            command.Parameters.Add(parameter);
-                        }
+                        command.Parameters.Add(parameter);
                     }
-
-                    conn.Open();
-                    SQLiteDataAdapter adapter = new SQLiteDataAdapter(command);
-                    adapter.Fill(dt);
                 }
+
+                conn.Open();
+                SQLiteDataAdapter adapter = new(command);
+                adapter.Fill(dt);
             }
             catch (Exception ex)
             {
-                log.Error($"Exception when excuting {sql} on {db}");
-                log.Error(ex);
+                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return dt;
@@ -204,27 +194,24 @@ namespace Mahjong.Utility
         {
             try
             {
-                using (SQLiteConnection conn = new SQLiteConnection(db))
+                using SQLiteConnection conn = new(db);
+                SQLiteCommand command = conn.CreateCommand();
+                command.CommandText = sql;
+
+                if (parameters.Length > 0)
                 {
-                    SQLiteCommand command = conn.CreateCommand();
-                    command.CommandText = sql;
-
-                    if (parameters.Length > 0)
+                    foreach (SQLiteParameter parameter in parameters.Cast<SQLiteParameter>())
                     {
-                        foreach (SQLiteParameter parameter in parameters)
-                        {
-                            command.Parameters.Add(parameter);
-                        }
+                        command.Parameters.Add(parameter);
                     }
-
-                    conn.Open();
-                    return command.ExecuteNonQuery();
                 }
+
+                conn.Open();
+                return command.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
-                log.Error($"Exception when excuting {sql} on {db}");
-                log.Error(ex);
+                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;
@@ -243,28 +230,25 @@ namespace Mahjong.Utility
         {
             try
             {
-                using (SQLiteConnection conn = new SQLiteConnection(db))
+                using SQLiteConnection conn = new(db);
+                SQLiteCommand command = conn.CreateCommand();
+                command.CommandText = sql;
+
+                if (parameters.Length > 0)
                 {
-                    SQLiteCommand command = conn.CreateCommand();
-                    command.CommandText = sql;
-
-                    if (parameters.Length > 0)
+                    foreach (SQLiteParameter parameter in parameters.Cast<SQLiteParameter>())
                     {
-                        foreach (SQLiteParameter parameter in parameters)
-                        {
-                            command.Parameters.Add(parameter);
-                        }
+                        command.Parameters.Add(parameter);
                     }
-
-                    conn.Open();
-                    command.ExecuteNonQuery();
-                    return (int)conn.LastInsertRowId;
                 }
+
+                conn.Open();
+                command.ExecuteNonQuery();
+                return (int)conn.LastInsertRowId;
             }
             catch (Exception ex)
             {
-                log.Error($"Exception when excuting {sql} on {db}");
-                log.Error(ex);
+                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;

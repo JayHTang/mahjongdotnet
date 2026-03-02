@@ -119,90 +119,90 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="getDiceRolled" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getdicerolled.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getDiceRolled.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getDiceRolledByPlayer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getdicerolledbyplayer.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getDiceRolledByPlayer.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getgame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getGame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getGameHistoryInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getgamehistoryinfo.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getGameHistoryInfo.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getGames" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getgames.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getGames.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getGamesUnfinished" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getgamesunfinished.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getGamesUnfinished.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getHand" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\gethand.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getHand.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getHands" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\gethands.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getHands.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getHighestWinnings" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\gethighestwinnings.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getHighestWinnings.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getLastRoundDetail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getlastrounddetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getLastRoundDetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getNextGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getnextgame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getNextGame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getNumOfRoundsPlayed" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getnumofroundsplayed.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getNumOfRoundsPlayed.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getPlayers" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getplayers.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getPlayers.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getRound" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getround.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getRound.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getRoundDetail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getrounddetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getRoundDetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getRounds" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getrounds.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getRounds.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="getRoundsWithGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\getroundswithgame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\getRoundsWithGame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="insertDice" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\insertdice.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\insertDice.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="insertGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\insertgame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\insertGame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="insertGameWithPrevGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\insertgamewithprevgame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\insertGameWithPrevGame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="insertPlayer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\insertplayer.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\insertPlayer.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="insertRound" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\insertround.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\insertRound.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="insertRoundDetail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\insertrounddetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\insertRoundDetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="updateGameDecrementHuangfan" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\updategamedecrementhuangfan.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\updateGameDecrementHuangfan.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="updateGameFinishGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\updategamefinishgame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\updateGameFinishGame.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="updateGameIncrementHuangfan" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\updategameincrementhuangfan.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\updateGameIncrementHuangfan.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="updateGameIncrementHuangfanExecuted" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\updategameincrementhuangfanexecuted.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\updateGameIncrementHuangfanExecuted.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="updateRound" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\updateround.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\updateRound.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="updateRoundDetail" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>sql\updaterounddetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>SQL\updateRoundDetail.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

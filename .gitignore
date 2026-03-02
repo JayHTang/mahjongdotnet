@@ -3,10 +3,11 @@
 ################################################################################
 
 /.vs
+/.vscode
 /Mahjong/.vs
 /Mahjong/bin
 /Mahjong/obj
-/Mahjong/_logs
+/Mahjong/logs
 /packages
 *.user
 *.db
