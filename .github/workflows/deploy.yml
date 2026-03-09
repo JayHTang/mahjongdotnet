@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -37,6 +39,13 @@ jobs:
           tags: |
             type=raw,value=latest
 
+      - name: Extract Git Variables
+        id: git_vars
+        run: |
+          echo "GIT_COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT_COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
+          echo "GIT_COMMIT_DATE=$(git show -s --format=%ci HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -45,6 +54,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_COMMIT_HASH=${{ steps.git_vars.outputs.GIT_COMMIT_HASH }}
+            GIT_COMMIT_COUNT=${{ steps.git_vars.outputs.GIT_COMMIT_COUNT }}
+            GIT_COMMIT_DATE=${{ steps.git_vars.outputs.GIT_COMMIT_DATE }}
 
       - name: Trigger Portainer Webhook
         run: |

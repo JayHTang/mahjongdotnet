@@ -8,11 +8,13 @@
     <Configurations>Debug;Release</Configurations>
     <TargetFramework>net8.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <MajorVersion>1</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AssemblyTitle>Mahjong</AssemblyTitle>
     <Product>Mahjong</Product>
     <Copyright>Copyright © $([System.DateTime]::Now.Year)</Copyright>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <UserSecretsId>e2668e97-8bfa-44a9-8ea4-8b02c22409c9</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -60,4 +62,38 @@
       <LastGenOutput>SQL.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <Target Name="SetGitVersion" BeforeTargets="BeforeBuild;GetAssemblyVersion;GenerateNuspec;GetPackageVersion">
+    <PropertyGroup>
+      <GitFormatString Condition="'$(OS)' == 'Windows_NT'">%25%25ci</GitFormatString>
+      <GitFormatString Condition="'$(OS)' != 'Windows_NT'">%25ci</GitFormatString>
+      <NullDevice Condition="'$(OS)' == 'Windows_NT'">nul</NullDevice>
+      <NullDevice Condition="'$(OS)' != 'Windows_NT'">/dev/null</NullDevice>
+    </PropertyGroup>
+
+    <Exec Condition="'$(GitCommitHash)' == ''" Command="git rev-parse --short HEAD 2&gt;$(NullDevice) || echo unknown" ConsoleToMSBuild="true" StandardOutputImportance="low" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHashRaw" />
+    </Exec>
+    <Exec Condition="'$(GitCommitCount)' == ''" Command="git rev-list --count HEAD 2&gt;$(NullDevice) || echo 0" ConsoleToMSBuild="true" StandardOutputImportance="low" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCountRaw" />
+    </Exec>
+    <Exec Condition="'$(GitCommitDate)' == ''" Command="git show -s --format=$(GitFormatString) HEAD 2&gt;$(NullDevice) || echo unknown" ConsoleToMSBuild="true" StandardOutputImportance="low" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitDateRaw" />
+    </Exec>
+
+    <PropertyGroup>
+      <GitCommitCount Condition="'$(GitCommitCount)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(GitCommitCountRaw), `\d+`))</GitCommitCount>
+      <GitCommitCount Condition="'$(GitCommitCount)' == ''">0</GitCommitCount>
+
+      <GitCommitHash Condition="'$(GitCommitHash)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(GitCommitHashRaw), `[a-f0-9]+`))</GitCommitHash>
+      <GitCommitHash Condition="'$(GitCommitHash)' == ''">unknown</GitCommitHash>
+
+      <GitCommitDate Condition="'$(GitCommitDate)' == ''">$(GitCommitDateRaw)</GitCommitDate>
+      <GitCommitDate Condition="'$(GitCommitDate)' == ''">unknown</GitCommitDate>
+
+      <Version>$(MajorVersion).$(MinorVersion).$(GitCommitCount)</Version>
+      <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(GitCommitCount).0</AssemblyVersion>
+      <FileVersion>$(MajorVersion).$(MinorVersion).$(GitCommitCount).0</FileVersion>
+      <InformationalVersion>$(MajorVersion).$(MinorVersion).$(GitCommitCount).$(GitCommitHash)|$(GitCommitDate)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
 </Project>

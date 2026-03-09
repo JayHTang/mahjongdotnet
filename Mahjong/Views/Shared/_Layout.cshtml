@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Reflection
+<!DOCTYPE html>
 <html>
 <head>
     <!-- Google tag (gtag.js) -->
@@ -64,7 +65,16 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Jay Tang</p>
+            @{
+                var informationalVersion = System.Reflection.Assembly.GetExecutingAssembly()
+                    .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()
+                    ?.InformationalVersion ?? "Unknown|Unknown";
+
+                var parts = informationalVersion.Split('|');
+                var version = parts.Length > 0 ? parts[0] : "Unknown";
+                var date = parts.Length > 1 ? parts[1] : "Unknown";
+            }
+            <p>&copy; @DateTime.Now.Year - Jay Tang | Version: @version | Built: @date</p>
         </footer>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
