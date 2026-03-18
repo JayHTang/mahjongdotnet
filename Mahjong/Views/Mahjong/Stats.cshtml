@@ -1,4 +1,4 @@
-﻿@using Mahjong.Models.Mahjong
+@using Mahjong.Models.Mahjong
 @using Highsoft.Web.Mvc.Charts
 @using Highsoft.Web.Mvc.Charts.Rendering
 @{
@@ -513,8 +513,14 @@
             @if (ViewBag.gameId == 0)
             {
                 <div>
-                    @{ var chartOptions = new Highcharts
+                    @{
+                        var cashFlowData = ViewData["cashFlowData"] as List<DependencywheelSeriesData> ?? new List<DependencywheelSeriesData>();
+                        var chartOptions = new Highcharts
                         {
+                            Chart = new Highsoft.Web.Mvc.Charts.Chart
+                            {
+                                ZoomType = ChartZoomType.X
+                            },
                             Title = new Title
                             {
                                 Text = "资金流向"
@@ -530,9 +536,9 @@
                             {
                                 new DependencywheelSeries
                                 {
-                                    Keys = {"from", "to", "weight"},
+                                    Keys = new List<string> { "from", "to", "weight" },
                                     Name = "Cash Flow",
-                                    Data = (List<DependencywheelSeriesData>)ViewData["cashFlowData"]
+                                    Data = cashFlowData
                                 }
                             },
                             Exporting = new Exporting { Enabled = true }

@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Data.SQLite;
 using System.Linq;
 using Microsoft.Data.SqlClient;
-using Serilog;
 
 namespace Mahjong.Utility
 {
