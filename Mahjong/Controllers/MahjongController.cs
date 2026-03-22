@@ -1,4 +1,4 @@
-﻿#define SQLITE
+#define SQLITE
 
 using Highsoft.Web.Mvc.Charts;
 using Mahjong.Models.Mahjong;
@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 
 #if SQLITE
 using DbParameter = System.Data.SQLite.SQLiteParameter;
@@ -23,15 +24,17 @@ namespace Mahjong.Controllers
     public class MahjongController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly Microsoft.Extensions.Caching.Memory.IMemoryCache _cache;
         public readonly decimal huaThreshold; // be greater than this number to be a valid game
         public readonly int roundCountThreshold; // greater than or equal to this number to be a real player
         public readonly int gameIdThreshold; // be greater than this number to be a valid game
         public readonly int lastPlayDateThreshold; // difference between the last time played and last game in record must be less than this number to be a real player
         private readonly string sqlServer;
 
-        public MahjongController(IConfiguration configuration)
+        public MahjongController(IConfiguration configuration, Microsoft.Extensions.Caching.Memory.IMemoryCache memoryCache)
         {
             _configuration = configuration;
+            _cache = memoryCache;
             huaThreshold = _configuration.GetValue<decimal>("AppSettings:mahjong_huaThreshold");
             roundCountThreshold = _configuration.GetValue<int>("AppSettings:mahjong_roundCountThreshold");
             gameIdThreshold = _configuration.GetValue<int>("AppSettings:mahjong_gameIdThreshold");
@@ -55,6 +58,7 @@ namespace Mahjong.Controllers
             {
                 dbUtility.Insert(sqlServer, SQL.insertPlayer, new DbParameter("@name", player.Name));
                 ModelState.Clear();
+                InvalidateCache();
             }
             return View();
         }
@@ -76,9 +80,7 @@ namespace Mahjong.Controllers
         {
             if (ModelState.IsValid)
             {
-                return RedirectToAction("Game", new
-                {
-                    gameId = dbUtility.InsertAndGetId(
+                int newId = dbUtility.InsertAndGetId(
                     sqlServer,
                     SQL.insertGame,
                     new DbParameter("@player1_id", game.Player1Id),
@@ -87,8 +89,9 @@ namespace Mahjong.Controllers
                     new DbParameter("@player4_id", game.Player4Id),
                     new DbParameter("@hua", game.HuaValue),
                     new DbParameter("@lezi", game.LeziValue)
-                )
-                });
+                );
+                InvalidateCache();
+                return RedirectToAction("Game", new { gameId = newId });
             }
 
             ViewData["players"] = GetAllPlayersByRoundsPlayed();
@@ -439,6 +442,7 @@ namespace Mahjong.Controllers
             }
 
             ModelState.Clear();
+            InvalidateCache();
 
             return Game(gameId);
         }
@@ -536,6 +540,7 @@ namespace Mahjong.Controllers
                 }
 
                 UpdateRound(roundId);
+                InvalidateCache();
             }
             return RedirectToAction("Game", new { gameId });
         }
@@ -632,8 +637,29 @@ namespace Mahjong.Controllers
 
         public ActionResult LeaderBoard()
         {
+            if (_cache.TryGetValue("LeaderBoardData", out Dictionary<string, object> cachedData))
+            {
+                foreach (var kvp in cachedData) ViewData[kvp.Key] = kvp.Value;
+                
+                List<Player> cachedRealPlayers = (List<Player>)cachedData["players"];
+                Dictionary<int, List<double>> cachedPlayerBalanceSeriesData = (Dictionary<int, List<double>>)cachedData["playerBalanceSeriesData"];
+                List<Series> rebuiltSeries = [];
+                foreach (Player player in cachedRealPlayers)
+                {
+                    rebuiltSeries.Add(new SplineSeries
+                    {
+                        Name = player.Name,
+                        Data = cachedPlayerBalanceSeriesData[player.Id].Select(y => new SplineSeriesData { Y = y }).ToList(),
+                        PointStart = 0
+                    });
+                }
+                ViewData["series"] = rebuiltSeries;
+
+                return View();
+            }
+
             List<Player> players = GetAllPlayers();
-            Dictionary<int, List<SplineSeriesData>> playerBalanceSeriesData = [];
+            Dictionary<int, List<double>> playerBalanceSeriesData = [];
             List<Series> series = [];
             Dictionary<int, int> playerRoundCount = [];
             Dictionary<int, decimal> playerBalanceSheet = [];
@@ -644,7 +670,7 @@ namespace Mahjong.Controllers
 
             foreach (Player player in players)
             {
-                playerBalanceSeriesData.Add(player.Id, [new() { Y = 0 }]);
+                playerBalanceSeriesData.Add(player.Id, [0]);
             }
 
             List<GameHistory> gameHistories = GetGameHistory();
@@ -663,11 +689,11 @@ namespace Mahjong.Controllers
                 {
                     if (gameHistory.Players.Contains(player.Id))
                     {
-                        playerBalanceSeriesData[player.Id].Add(new SplineSeriesData { Y = playerBalanceSeriesData[player.Id].Last().Y.GetValueOrDefault() + (double)gameHistory.BalanceSheet[player.Id] });
+                        playerBalanceSeriesData[player.Id].Add(playerBalanceSeriesData[player.Id].Last() + (double)gameHistory.BalanceSheet[player.Id]);
                     }
                     else
                     {
-                        playerBalanceSeriesData[player.Id].Add(new SplineSeriesData { Y = playerBalanceSeriesData[player.Id].Last().Y });
+                        playerBalanceSeriesData[player.Id].Add(playerBalanceSeriesData[player.Id].Last());
                     }
                 }
             }
@@ -730,7 +756,7 @@ namespace Mahjong.Controllers
                     {
                         realPlayers.Add(player);
                         playerRoundCount.Add(player.Id, count);
-                        playerBalanceSheet.Add(player.Id, (decimal)playerBalanceSeriesData[player.Id].Last().Y.GetValueOrDefault());
+                        playerBalanceSheet.Add(player.Id, (decimal)playerBalanceSeriesData[player.Id].Last());
                     }
                 }
             }
@@ -742,7 +768,7 @@ namespace Mahjong.Controllers
                 series.Add(new SplineSeries
                 {
                     Name = player.Name,
-                    Data = playerBalanceSeriesData[player.Id],
+                    Data = playerBalanceSeriesData[player.Id].Select(y => new SplineSeriesData { Y = y }).ToList(),
                     PointStart = 0
                 });
             }
@@ -758,11 +784,50 @@ namespace Mahjong.Controllers
             ViewData["xAxis"] = xAxis;
             ViewData["message"] = GetRealPlayerMessage(gameHistories.First().Start);
 
+            Dictionary<string, object> cacheData = new()
+            {
+                { "players", realPlayers },
+                { "playerBalanceSeriesData", playerBalanceSeriesData },
+                { "playerRoundCount", playerRoundCount },
+                { "playerBalanceSheet", playerBalanceSheet },
+                { "playerBalanceSheetByYear", playerBalanceSheetByYear },
+                { "playerRoundCountByYear", playerRoundCountByYear },
+                { "rankedPlayersByYear", rankedPlayersByYear },
+                { "years", years },
+                { "xAxis", xAxis },
+                { "message", ViewData["message"] }
+            };
+            _cache.Set("LeaderBoardData", cacheData);
+
             return View();
         }
 
         public ActionResult Stats(int id = 0)
         {
+            if (id == 0 && _cache.TryGetValue("StatsGlobalViewData", out Dictionary<string, object> cachedData))
+            {
+                foreach (var kvp in cachedData) ViewData[kvp.Key] = kvp.Value;
+                ViewBag.gameId = 0;
+
+                List<Player> cachedRealPlayers = (List<Player>)cachedData["realPlayers"];
+                Dictionary<int, Stat> cachedStatBook = (Dictionary<int, Stat>)cachedData["statBook"];
+                List<DependencywheelSeriesData> rebuiltCashFlowData = [];
+                foreach (Player player in cachedRealPlayers)
+                {
+                    Stat stat = cachedStatBook[player.Id];
+                    foreach (Player opponent in cachedRealPlayers)
+                    {
+                        if (opponent.Id != player.Id && stat.HeadToHead.TryGetValue(opponent.Id, out decimal value) && value > 0)
+                        {
+                            rebuiltCashFlowData.Add(new DependencywheelSeriesData { From = opponent.Name, To = player.Name, Weight = (double)value });
+                        }
+                    }
+                }
+                ViewData["cashFlowData"] = rebuiltCashFlowData;
+
+                return View();
+            }
+
             List<Player> players = GetAllPlayers();
             List<Hand> hands = GetHands();
             DataTable dt = dbUtility.Read(sqlServer, SQL.getRoundsWithGame, new DbParameter("@game_id", id));
@@ -1192,11 +1257,34 @@ namespace Mahjong.Controllers
             ViewData["diceRolls"] = diceRolls;
             ViewData["playerTotalRolls"] = playerTotalRolls;
 
+            if (id == 0)
+            {
+                Dictionary<string, object> cacheData = new()
+                {
+                    { "players", players },
+                    { "realPlayers", realPlayers },
+                    { "hands", hands },
+                    { "statBook", statBook },
+                    { "diceRollers", diceRollers },
+                    { "diceRolls", diceRolls },
+                    { "playerTotalRolls", playerTotalRolls }
+                };
+                _cache.Set("StatsGlobalViewData", cacheData);
+            }
+
             return View();
         }
 
         public ActionResult Records()
         {
+            if (_cache.TryGetValue("RecordsData", out Dictionary<string, object> cachedData))
+            {
+                ViewBag.records = cachedData["records"];
+                ViewBag.recordsWinning = cachedData["recordsWinning"];
+                ViewBag.recordsLoss = cachedData["recordsLoss"];
+                return View();
+            }
+
             Dictionary<int, string> playerBook = GetPlayerBook();
 
             // single round
@@ -1249,11 +1337,28 @@ namespace Mahjong.Controllers
             ViewBag.recordsWinning = recordsWinning.Where(y => y.Winning >= winningThreshold).OrderByDescending(y => y.Winning).ThenByDescending(y => y.Date).ToList();
             ViewBag.recordsLoss = recordsLoss.Where(y => y.Winning <= -winningThreshold).OrderBy(y => y.Winning).ThenByDescending(y => y.Date).ToList();
 
+            Dictionary<string, object> cacheData = new()
+            {
+                { "records", ViewBag.records },
+                { "recordsWinning", ViewBag.recordsWinning },
+                { "recordsLoss", ViewBag.recordsLoss }
+            };
+            _cache.Set("RecordsData", cacheData);
+
             return View();
         }
 
         public ActionResult RoundRecords()
         {
+            if (_cache.TryGetValue("RoundRecordsData", out Dictionary<string, object> cachedData))
+            {
+                ViewBag.winningStreakRecords = cachedData["winningStreakRecords"];
+                ViewBag.zimoStreakRecords = cachedData["zimoStreakRecords"];
+                ViewBag.losingStreakRecords = cachedData["losingStreakRecords"];
+                ViewBag.dianpaoStreakRecords = cachedData["dianpaoStreakRecords"];
+                return View();
+            }
+
             Dictionary<int, string> playerBook = GetPlayerBook();
             DataTable dt = dbUtility.Read(sqlServer, SQL.getRoundsWithGame, new DbParameter("@game_id", DbUtility.Zero));
 
@@ -1483,6 +1588,15 @@ namespace Mahjong.Controllers
             ViewBag.losingStreakRecords = GetStreakRecords(losingStreak, gameDates, 10);
             ViewBag.dianpaoStreakRecords = GetStreakRecords(dianpaoStreak, gameDates, 10);
 
+            Dictionary<string, object> cacheData = new()
+            {
+                { "winningStreakRecords", ViewBag.winningStreakRecords },
+                { "zimoStreakRecords", ViewBag.zimoStreakRecords },
+                { "losingStreakRecords", ViewBag.losingStreakRecords },
+                { "dianpaoStreakRecords", ViewBag.dianpaoStreakRecords }
+            };
+            _cache.Set("RoundRecordsData", cacheData);
+
             return View();
         }
 
@@ -1500,6 +1614,7 @@ namespace Mahjong.Controllers
                 {
                     dbUtility.Insert(sqlServer, SQL.updateGameDecrementHuangfan, new DbParameter("gameId", gameId));
                 }
+                InvalidateCache();
             }
             return RedirectToAction("Game", new { gameId });
         }
@@ -1972,6 +2087,15 @@ namespace Mahjong.Controllers
         private void FinishGame(int gameId)
         {
             dbUtility.Insert(sqlServer, SQL.updateGameFinishGame, new DbParameter("@gameId", gameId));
+            InvalidateCache();
+        }
+
+        private void InvalidateCache()
+        {
+            _cache.Remove("StatsGlobalViewData");
+            _cache.Remove("LeaderBoardData");
+            _cache.Remove("RecordsData");
+            _cache.Remove("RoundRecordsData");
         }
 
         private List<GameHistory> GetGameHistory(bool combineGameWithSubs = true)
