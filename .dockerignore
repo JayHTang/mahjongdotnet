@@ -21,6 +21,11 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/App_Data/
+**/*.db
+**/*.db-journal
+**/*.db-shm
+**/*.db-wal
 LICENSE
 README.md
 !**/.gitignore

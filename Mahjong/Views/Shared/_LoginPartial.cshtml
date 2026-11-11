@@ -1,18 +1,32 @@
-﻿@using Microsoft.AspNetCore.Identity
-@if (User.Identity.IsAuthenticated)
+@using Microsoft.AspNetCore.Identity
+@if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right my-0" }))
     {
         @Html.AntiForgeryToken()
 
         <ul class="nav navbar-nav navbar-right">
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <a class="nav-link dropdown-toggle d-flex align-items-center font-weight-bold text-dark" href="#" id="navbarUserDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="rounded-circle bg-light border p-1 mr-2 text-primary d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                        <i class="fa-solid fa-user fa-sm"></i>
+                    </span>
                     @("你好 " + User.Identity.Name)
                 </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    @Html.ActionLink("管理", "Index", "Manage", null, new { @class = "dropdown-item" })
-                    <a href="javascript:document.getElementById('logoutForm').submit()" class="dropdown-item">退出</a>
+                <div class="dropdown-menu dropdown-menu-right shadow-sm" aria-labelledby="navbarUserDropdown">
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <a class="dropdown-item" href="@Url.Action("Index", "Admin")">
+                            <i class="fa-solid fa-shield-halved mr-2 text-muted"></i>系统设置
+                        </a>
+                    }
+                    <a class="dropdown-item" href="@Url.Action("Index", "Manage")">
+                        <i class="fa-solid fa-gear mr-2 text-muted"></i>管理
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <button type="submit" class="dropdown-item text-danger font-weight-bold">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-2 text-danger"></i>退出
+                    </button>
                 </div>
             </li>
         </ul>
@@ -20,8 +34,11 @@
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        @*<li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>*@
-        <li class="nav-item">@Html.ActionLink("登录", "Login", "Account", null, new { @id = "loginLink", @class = "nav-link" })</li>
+    <ul class="nav navbar-nav navbar-right my-0">
+        <li class="nav-item">
+            <a class="nav-link font-weight-bold" href="@Url.Action("Login", "Account")" id="loginLink">
+                <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>登录
+            </a>
+        </li>
     </ul>
 }

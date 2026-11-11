@@ -1,27 +1,40 @@
-﻿@using Mahjong.Models.Mahjong
+@using Mahjong.Models.Mahjong
 @model Player
 @{
     ViewBag.Title = "新建玩家";
 }
 
-<div class="container">
-    <br />
-    <h2>新建玩家</h2><br />
-    @using (Html.BeginForm("AddPlayer", "Mahjong", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-        <table style="white-space: nowrap">
-            <tr>
-                <td style="vertical-align:top">玩家名称: </td>
-                <td>
-                    @Html.TextBoxFor(m => m.Name)<br />
-                    @Html.ValidationMessageFor(m => m.Name)<p></p>
-                </td>
-            </tr>
-            <tr>
-                <td><input type="submit" value="提交" /></td>
-                <td></td>
-            </tr>
-        </table>
-    }
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-left-primary">
+                <div class="card-header">
+                    <i class="fa-solid fa-user-plus text-primary mr-2"></i>新建玩家
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <i class="fa-solid fa-circle-check mr-1"></i>@TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("AddPlayer", "Mahjong", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label for="Name" class="font-weight-bold">玩家名称</label>
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "请输入新玩家昵称", autocomplete = "off" })
+                            @Html.ValidationMessageFor(m => m.Name)
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-check mr-1"></i>提交
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

@@ -1,51 +1,67 @@
-﻿@model Mahjong.Models.ExpandedUser
+@model Mahjong.Models.ExpandedUser
+@{
+    ViewBag.Title = "编辑用户";
+}
 
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-left-primary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-user-pen text-primary mr-2"></i>编辑用户</span>
+                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("EditRoles", "Admin", new { UserName = Model?.UserName })">
+                        <i class="fa-solid fa-user-tag mr-1"></i>管理角色
+                    </a>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm())
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+                        @Html.HiddenFor(model => model.UserName)
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            <label class="font-weight-bold">用户名</label>
+                            <input type="text" class="form-control" value="@Model?.UserName" readonly />
+                        </div>
 
-    <div class="form-horizontal">
-        <h4>Edit User</h4>
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DisplayFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Email, "邮箱", new { @class = "font-weight-bold" })
+                            @Html.TextBoxFor(model => model.Email, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Password, "重置密码 (留空则保持不变)", new { @class = "font-weight-bold" })
+                            @Html.PasswordFor(model => model.Password, new { @class = "form-control", autocomplete = "new-password" })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.PasswordFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Password, "",
-               new { @class = "text-danger" })
-            </div>
-        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">锁定截止时间 (UTC)</label>
+                            <div>
+                                @if (Model?.LockoutEndDateUtc.HasValue == true && Model.LockoutEndDateUtc.Value > DateTime.UtcNow)
+                                {
+                                    <span class="badge badge-danger">@Model.LockoutEndDateUtc.Value.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">未锁定</span>
+                                }
+                            </div>
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.LockoutEndDateUtc, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DisplayFor(model => model.LockoutEndDateUtc, new { htmlAttributes = new { @class = "form-control" } })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-outline-primary" />
-                @Html.ActionLink("Edit Roles", "EditRoles", new { UserName = Model.UserName }, new { @class = "btn btn-outline-primary" })
-                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-outline-primary" })
+                        <div class="d-flex justify-content-between mt-4">
+                            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Admin")">
+                                <i class="fa-solid fa-arrow-left mr-1"></i>返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-check mr-1"></i>保存修改
+                            </button>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
-}
+</div>

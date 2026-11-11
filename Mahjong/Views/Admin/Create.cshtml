@@ -1,42 +1,55 @@
-﻿@model Mahjong.Models.ExpandedUser
+@model Mahjong.Models.ExpandedUser
+@{
+    ViewBag.Title = "新建用户";
+}
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-left-primary">
+                <div class="card-header">
+                    <i class="fa-solid fa-user-plus text-primary mr-2"></i>新建用户
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm())
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
 
-    <div class="form-horizontal">
-        <h4>Create User</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UserName, "用户名", new { @class = "font-weight-bold" })
+                            @Html.TextBoxFor(model => model.UserName, new { @class = "form-control", autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Email, "邮箱 (选填)", new { @class = "font-weight-bold" })
+                            @Html.TextBoxFor(model => model.Email, new { @class = "form-control", autocomplete = "off" })
+                            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.PasswordFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Password, "密码", new { @class = "font-weight-bold" })
+                            @Html.PasswordFor(model => model.Password, new { @class = "form-control", autocomplete = "new-password" })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Roles, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("Roles")
-            </div>
-        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Roles, "初始角色", new { @class = "font-weight-bold" })
+                            @Html.DropDownList("Roles", null, new { @class = "custom-select" })
+                        </div>
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-outline-primary" />
-                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-outline-primary" })
+                        <div class="d-flex justify-content-between mt-4">
+                            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Admin")">
+                                <i class="fa-solid fa-arrow-left mr-1"></i>返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-check mr-1"></i>保存
+                            </button>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
-}
+</div>

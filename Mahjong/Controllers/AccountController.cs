@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Mahjong.Models;
@@ -6,12 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Configuration;
 
 namespace Mahjong.Controllers
 {
     [Authorize]
-    public class AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : Controller
+    public class AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager) : Controller
     {
         public SignInManager<ApplicationUser> SignInManager => signInManager;
         public UserManager<ApplicationUser> UserManager => userManager;
@@ -22,9 +21,6 @@ namespace Mahjong.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
-            // Create the Admin account using setting in Web.config (if needed)
-            //CreateAdminIfNeeded();
-
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
@@ -41,9 +37,7 @@ namespace Mahjong.Controllers
                 return View(model);
             }
 
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, change to lockoutOnFailure: true
-            var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
+            var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: true);
             if (result.Succeeded)
             {
                 return RedirectToLocal(returnUrl);
@@ -111,7 +105,7 @@ namespace Mahjong.Controllers
 
         //
         // GET: /Account/Register
-        [AllowAnonymous]
+        [Authorize(Roles = "Administrator")]
         public ActionResult Register()
         {
             return View();
@@ -120,7 +114,7 @@ namespace Mahjong.Controllers
         //
         // POST: /Account/Register
         [HttpPost]
-        [AllowAnonymous]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
@@ -131,13 +125,6 @@ namespace Mahjong.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false);
-
-                    // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
-                    // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
                     return RedirectToAction("Stats", "Mahjong");
                 }
                 AddErrors(result);
@@ -185,13 +172,6 @@ namespace Mahjong.Controllers
                     // Don't reveal that the user does not exist or is not confirmed
                     return View("ForgotPasswordConfirmation");
                 }
-
-                // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
-                // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             // If we got this far, something failed, redisplay form
@@ -329,7 +309,7 @@ namespace Mahjong.Controllers
                 // If the user does not have an account, then prompt the user to create an account
                 ViewBag.ReturnUrl = returnUrl;
                 ViewBag.LoginProvider = loginInfo.LoginProvider;
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email) });
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email) });
             }
         }
 
@@ -389,40 +369,9 @@ namespace Mahjong.Controllers
             return View();
         }
 
-
-
-        // Add CreateAdminIfNeeded
-        #region private void CreateAdminIfNeeded()
-        private void CreateAdminIfNeeded()
-        {
-            // Get Admin Account
-            string AdminUserName = configuration.GetValue<string>("AdminUserName");
-            string AdminPassword = configuration.GetValue<string>("AdminPassword");
-            // See if Admin exists
-            var objAdminUser = UserManager.FindByNameAsync(AdminUserName).Result;
-            if (objAdminUser == null)
-            {
-                //See if the Admin role exists
-                if (!RoleManager.RoleExistsAsync("Administrator").Result)
-                {
-                    // Create the Admin Role (if needed)
-                    IdentityRole objAdminRole = new("Administrator");
-                    RoleManager.CreateAsync(objAdminRole).Wait();
-                }
-                // Create Admin user
-                var objNewAdminUser = new ApplicationUser { UserName = AdminUserName, Email = AdminUserName };
-                _ = UserManager.CreateAsync(objNewAdminUser, AdminPassword).Result;
-                // Put user in Admin role
-                UserManager.AddToRoleAsync(objNewAdminUser, "Administrator").Wait();
-            }
-        }
-        #endregion
-
         #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
-
-
 
         private void AddErrors(IdentityResult result)
         {
@@ -440,8 +389,6 @@ namespace Mahjong.Controllers
             }
             return RedirectToAction("Stats", "Mahjong");
         }
-
-
         #endregion
     }
 }

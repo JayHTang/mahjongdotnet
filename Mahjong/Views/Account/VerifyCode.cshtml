@@ -1,40 +1,46 @@
-﻿@model Mahjong.Models.VerifyCodeViewModel
+@model Mahjong.Models.VerifyCodeViewModel
 @{
-    ViewBag.Title = "Verify";
+    ViewBag.Title = "输入验证码";
 }
 
-<h2>@ViewBag.Title.</h2>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-left-primary">
+                <div class="card-header">
+                    <i class="fa-solid fa-key text-primary mr-2"></i>输入双重验证码
+                </div>
+                <div class="card-body p-4">
+                    @using (Html.BeginForm("VerifyCode", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, antiforgery: null, htmlAttributes: new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("provider", Model.Provider)
+                        @Html.Hidden("rememberMe", Model.RememberMe)
+                        @Html.ValidationSummary("", new { @class = "text-danger small mb-3" })
 
-@using (Html.BeginForm("VerifyCode", "Account", new { ReturnUrl = Model.ReturnUrl }, FormMethod.Post, antiforgery: null, htmlAttributes: new { @class = "form-horizontal", role = "form" }))
-{
-    @Html.AntiForgeryToken()
-    @Html.Hidden("provider", @Model.Provider)
-    @Html.Hidden("rememberMe", @Model.RememberMe)
-    <h4>Enter verification code</h4>
-    <hr />
-    @Html.ValidationSummary("", new { @class = "text-danger" })
-    <div class="form-group">
-        @Html.LabelFor(m => m.Code, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">
-            @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <div class="checkbox">
-                @Html.CheckBoxFor(m => m.RememberBrowser)
-                @Html.LabelFor(m => m.RememberBrowser)
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Code, "验证码", new { @class = "font-weight-bold small text-secondary" })
+                            @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="mb-0 d-inline-flex align-items-center small text-secondary" style="cursor: pointer;">
+                                @Html.CheckBoxFor(m => m.RememberBrowser)
+                                <span>记住当前浏览器</span>
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary">验证</button>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" class="btn btn-outline-primary" value="Submit" />
-        </div>
-    </div>
-}
+</div>
 
-@section Scripts {
+@section scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 }

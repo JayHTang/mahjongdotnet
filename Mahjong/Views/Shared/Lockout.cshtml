@@ -1,10 +1,22 @@
-﻿
-
 @{
     ViewBag.Title = "Locked Out";
 }
 
-<hgroup>
-    <h1 class="text-danger">Locked out.</h1>
-    <h2 class="text-danger">This account has been locked out, please try again later.</h2>
-</hgroup>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-left-danger text-center p-4">
+                <div class="mb-3 text-danger">
+                    <i class="fa-solid fa-user-lock fa-3x"></i>
+                </div>
+                <h2 class="text-danger mb-2">账号已锁定</h2>
+                <p class="text-muted mb-4">由于多次登录失败，该账号已暂时锁定，请稍后再试。</p>
+                <div>
+                    <a class="btn btn-outline-primary" href="@Url.Action("Login", "Account")">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>返回登录
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

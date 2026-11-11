@@ -1,49 +1,114 @@
-﻿@model X.PagedList.IPagedList<Mahjong.Models.ExpandedUser>
-@using X.PagedList;
-<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
-
+@model X.PagedList.IPagedList<Mahjong.Models.ExpandedUser>
+@using X.PagedList
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "系统设置";
+    var currentFilter = ViewBag.CurrentFilter as string;
 }
 
-<br />
-<p>
-    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-outline-primary" })
-    @Html.ActionLink("Edit Roles", "ViewAllRoles", null, new { @class = "btn btn-outline-primary" })
-    @Html.ActionLink("Back to Home", "Stats", "Mahjong", null, new { @class = "btn btn-outline-primary" })
-</p>
-<br />
-@using(Html.BeginForm("Index", "Admin", FormMethod.Get))
-{
-    <div class="form-group">
-        Search:&nbsp; @Html.TextBox("searchStringUserNameOrEmail", ViewBag.CurrentFilter as string)
-        <input type="submit" value="Search" />
+<div class="container py-2">
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+        <div>
+            <h2 class="mb-0"><i class="fa-solid fa-shield-halved text-primary mr-2"></i>用户与权限管理</h2>
+        </div>
+        <div class="mt-2 mt-sm-0">
+            <a class="btn btn-primary btn-sm" href="@Url.Action("Create", "Admin")">
+                <i class="fa-solid fa-user-plus mr-1"></i>新建用户
+            </a>
+            <a class="btn btn-outline-primary btn-sm ml-1" href="@Url.Action("ViewAllRoles", "Admin")">
+                <i class="fa-solid fa-user-tag mr-1"></i>角色管理
+            </a>
+            <a class="btn btn-outline-secondary btn-sm ml-1" href="@Url.Action("Stats", "Mahjong", new { id = 0 })">
+                <i class="fa-solid fa-house mr-1"></i>返回首页
+            </a>
+        </div>
     </div>
-}
-<br />
-<table class="table">
-    <tr>
-        <th>User Name</th>
-        <th>Locked Out</th>
-        <th></th>
-    </tr>
-    @foreach(var item in Model)
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.UserName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LockoutEndDateUtc)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "EditUser", new {UserName = item.UserName}) | 
-                @if((item.UserName.ToLower() != this.User.Identity.Name.ToLower()))
-                {
-                    @Html.ActionLink("Delete", "DeleteUser", new { UserName = item.UserName}, new { onclick = "return confirm('Are you sure you wish to delete this user?');"})
-                }
-            </td>
-        </tr>
-    }
-</table>
 
+    <div class="card">
+        <div class="card-header">
+            @using (Html.BeginForm("Index", "Admin", FormMethod.Get, new { @class = "form-inline" }))
+            {
+                <div class="input-group input-group-sm" style="max-width: 340px; width: 100%;">
+                    @Html.TextBox("searchStringUserNameOrEmail", currentFilter, new { @class = "form-control", placeholder = "按用户名搜索..." })
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-magnifying-glass mr-1"></i>搜索
+                        </button>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(currentFilter))
+                {
+                    <a class="btn btn-outline-secondary btn-sm ml-2" href="@Url.Action("Index", "Admin")">重置</a>
+                }
+            }
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>用户名</th>
+                        <th>锁定截止时间 (UTC)</th>
+                        <th class="text-right">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var isLocked = item.LockoutEndDateUtc.HasValue && item.LockoutEndDateUtc.Value > DateTime.UtcNow;
+                        <tr>
+                            <td class="font-weight-bold">
+                                <i class="fa-regular fa-user text-muted mr-2"></i>@item.UserName
+                            </td>
+                            <td>
+                                @if (isLocked)
+                                {
+                                    <span class="badge badge-danger"><i class="fa-solid fa-lock mr-1"></i>@item.LockoutEndDateUtc.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">正常</span>
+                                }
+                            </td>
+                            <td class="text-right">
+                                <a class="btn btn-outline-primary btn-sm" href="@Url.Action("EditUser", "Admin", new { UserName = item.UserName })">
+                                    <i class="fa-regular fa-pen-to-square mr-1"></i>编辑
+                                </a>
+                                @if (!string.Equals(item.UserName, User.Identity?.Name, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a class="btn btn-outline-danger btn-sm ml-1"
+                                       href="@Url.Action("DeleteUser", "Admin", new { UserName = item.UserName })"
+                                       onclick="return confirm('确定要删除该用户吗？');">
+                                        <i class="fa-regular fa-trash-can mr-1"></i>删除
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.PageCount > 1)
+        {
+            <div class="card-footer d-flex justify-content-between align-items-center flex-wrap">
+                <span class="text-muted small">第 @Model.PageNumber / @Model.PageCount 页 (共 @Model.TotalItemCount 位用户)</span>
+                <nav aria-label="User list pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link" href="@(Model.HasPreviousPage ? Url.Action("Index", "Admin", new { page = Model.PageNumber - 1, currentFilter }) : "#")">上一页</a>
+                        </li>
+                        @for (int p = 1; p <= Model.PageCount; p++)
+                        {
+                            <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", "Admin", new { page = p, currentFilter })">@p</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                            <a class="page-link" href="@(Model.HasNextPage ? Url.Action("Index", "Admin", new { page = Model.PageNumber + 1, currentFilter }) : "#")">下一页</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>

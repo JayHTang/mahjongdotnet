@@ -1,32 +1,39 @@
-﻿@model Mahjong.Models.VerifyPhoneNumberViewModel
+@model Mahjong.Models.VerifyPhoneNumberViewModel
 @{
-    ViewBag.Title = "Verify Phone Number";
+    ViewBag.Title = "验证手机号";
 }
 
-<h2>@ViewBag.Title.</h2>
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-left-primary">
+                <div class="card-header">
+                    <i class="fa-solid fa-comment-sms text-primary mr-2"></i>验证手机号
+                </div>
+                <div class="card-body p-4">
+                    @using (Html.BeginForm("VerifyPhoneNumber", "Manage", FormMethod.Post, new { role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("phoneNumber", Model.PhoneNumber)
+                        @Html.ValidationSummary("", new { @class = "text-danger small mb-3" })
 
-@using (Html.BeginForm("VerifyPhoneNumber", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-{
-    @Html.AntiForgeryToken()
-    @Html.Hidden("phoneNumber", @Model.PhoneNumber)
-    <h4>Enter verification code</h4>
-    <h5>@ViewBag.Status</h5>
-    <hr />
-    @Html.ValidationSummary("", new { @class = "text-danger" })
-    <div class="form-group">
-        @Html.LabelFor(m => m.Code, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">
-            @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Code, "验证码", new { @class = "font-weight-bold small text-secondary" })
+                            @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Manage")">返回</a>
+                            <button type="submit" class="btn btn-primary">验证</button>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" class="btn btn-outline-primary" value="Submit" />
-        </div>
-    </div>
-}
+</div>
 
-@section Scripts {
+@section scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 }

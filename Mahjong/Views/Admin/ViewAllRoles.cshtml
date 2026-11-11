@@ -1,37 +1,62 @@
-﻿@model IEnumerable<Mahjong.Models.Role>
+@model IEnumerable<Mahjong.Models.Role>
+@{
+    ViewBag.Title = "角色列表";
+}
 
-<br />
-@Html.ValidationSummary(true, "", new { @class = "text-danger" })
-<p>
-    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-outline-primary" })
-    @Html.ActionLink("Add Role", "AddRole", null, new { @class = "btn btn-outline-primary" })
-</p>
-<table class="table">
-    <tr>
-        <th>
-            Role
-        </th>
-        <th>
-        </th>
-    </tr>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.RoleName)
-            </td>
-            <td>
-                @if (item.RoleName.ToLower() != "Administrator")
-                {
-                    @Html.ActionLink("Delete", "DeleteUserRole",
-                   new { RoleName = item.RoleName },
-                   new
-                   {
-                       onclick = "return confirm('Are you sure you wish to delete this role?');"
-                   })
-                }
-            </td>
-        </tr>
-    }
-</table>
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0"><i class="fa-solid fa-user-tag text-primary mr-2"></i>角色管理</h2>
+                <div>
+                    <a class="btn btn-primary btn-sm" href="@Url.Action("AddRole", "Admin")">
+                        <i class="fa-solid fa-plus mr-1"></i>新建角色
+                    </a>
+                    <a class="btn btn-outline-secondary btn-sm ml-1" href="@Url.Action("Index", "Admin")">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>返回用户列表
+                    </a>
+                </div>
+            </div>
 
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>角色名称</th>
+                                <th class="text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="font-weight-bold">
+                                        <span class="badge badge-light mr-1"><i class="fa-solid fa-key text-primary"></i></span>
+                                        @item.RoleName
+                                    </td>
+                                    <td class="text-right">
+                                        @if (!string.Equals(item.RoleName, "Administrator", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <a class="btn btn-outline-danger btn-sm"
+                                               href="@Url.Action("DeleteUserRole", "Admin", new { RoleName = item.RoleName })"
+                                               onclick="return confirm('确定要删除该角色吗？');">
+                                                <i class="fa-regular fa-trash-can mr-1"></i>删除
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">系统内置</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

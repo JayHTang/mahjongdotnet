@@ -1,1 +1,0 @@
-﻿SELECT * FROM rounddetail WHERE round_id = (SELECT MAX(id) FROM round WHERE game_id = @gameId) ORDER BY created DESC

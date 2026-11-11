@@ -1,7 +1,5 @@
-﻿@using Mahjong.Models.Mahjong
-@using Highsoft.Web.Mvc.Charts
-@using Highsoft.Web.Mvc.Charts.Rendering
-
+@using Mahjong.Models.Mahjong
+@using System.Text.Json
 @{
     ViewBag.Title = "排行榜";
     var playerBalanceSheet = (Dictionary<int, decimal>)ViewData["playerBalanceSheet"];
@@ -11,162 +9,176 @@
     var playerRoundCountByYear = (Dictionary<int, Dictionary<int, int>>)ViewData["playerRoundCountByYear"];
     var years = (List<int>)ViewData["years"];
     var rankedPlayersByYear = (Dictionary<int, List<Player>>)ViewData["rankedPlayersByYear"];
-}
 
-@section scripts{
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts/highcharts.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts/modules/series-label.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts/modules/exporting.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts/modules/export-data.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/highcharts/modules/accessibility.js"></script>
-    <script type="text/javascript">
-        Highcharts.setOptions({
-            lang: {
-                thousandsSep: ','
-            }
-        });
-    </script>
-    <script>
-        $(document).ready(function () {
-            $('.highcharts-credits').remove();
-        });
-    </script>
-}
+    var xAxisJson = JsonSerializer.Serialize(ViewData["xAxis"] ?? new List<string>());
+    var seriesJson = JsonSerializer.Serialize(ViewData["series"] ?? new List<LeaderBoardSplineSeriesDto>());
 
-@section css{
-    <style>
-        .border-right-primary {
-            border-right: 2px solid #dee2e6 !important;
-        }
-        .border-left-primary {
-            border-left: 2px solid #dee2e6 !important;
-        }
-
-        .nowrap-header {
-            white-space: nowrap;
-            text-align: center !important;
-        }
-
-        .borderless {
-            border: 0px !important;
-        }
-    </style>
-}
-
-@{
-    var chartOptions = new Highcharts
+    string GetValueClass(decimal val)
     {
-        Chart = new Highsoft.Web.Mvc.Charts.Chart
-        {
-            ZoomType = ChartZoomType.X
-        },
-        Title = new Title
-        {
-            Text = "输赢趋势"
-        },
-        XAxis = new List<XAxis>
-{
-            new XAxis
-            {
-                Categories = (List<string>)ViewData["xAxis"],
-                TickInterval = 1
-            }
-        },
-        YAxis = new List<YAxis>
-{
-            new YAxis
-            {
-                Title = new YAxisTitle
-                {
-                    Text = "$"
-                }
-            }
-        },
-        Tooltip = new Tooltip
-        {
-            Shared = true
-        },
-        PlotOptions = new PlotOptions
-        {
-            Spline = new PlotOptionsSpline
-            {
-                Marker = new PlotOptionsSplineMarker
-                {
-                    Enabled = false
-                }
-            }
-        },
-        Series = (List<Series>)ViewData["series"],
-        Exporting = new Exporting { Enabled = false }
-    };
-    chartOptions.ID = "chart";
-    var renderer = new HighchartsRenderer(chartOptions);
+        if (val > 0) return "val-positive";
+        if (val < 0) return "val-negative";
+        return "val-neutral";
+    }
+
+    string GetRankBadgeClass(int index)
+    {
+        if (index == 0) return "rank-badge rank-1";
+        if (index == 1) return "rank-badge rank-2";
+        if (index == 2) return "rank-badge rank-3";
+        return "rank-badge";
+    }
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-xl-3">
-            <h2>总排行榜</h2>
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th>排名</th>
-                        <th>玩家</th>
-                        <th>输赢</th>
-                        <th>盘数</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < players.Count; i++)
-                    {
-                        var player = players[i];
+<div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+    <div>
+        <h2 class="mb-1"><i class="fa-solid fa-trophy text-warning mr-2"></i>排行榜</h2>
+        @if (!string.IsNullOrEmpty(ViewBag.message as string))
+        {
+            <p class="text-muted small mb-0"><i class="fa-solid fa-circle-info mr-1"></i>@ViewBag.message</p>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-4 mb-3">
+        <div class="card h-100 border-left-primary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-crown text-warning mr-2"></i>总排行榜</span>
+                <span class="badge badge-light">@players.Count 位活跃玩家</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="thead-light">
                         <tr>
-                            <td>@(i + 1)</td>
-                            <td>@player.Name</td>
-                            <td align="right">@playerBalanceSheet[player.Id].ToString("$#,##0.00")</td>
-                            <td align="right">@playerRoundCount[player.Id]</td>
+                            <th class="text-center" style="width: 64px;">排名</th>
+                            <th>玩家</th>
+                            <th class="text-right">输赢</th>
+                            <th class="text-right">盘数</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-            <p>@ViewBag.message</p>
-        </div>
-        <div class="col-xl-9">
-            @Html.Raw(renderer.RenderHtml())
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < players.Count; i++)
+                        {
+                            var player = players[i];
+                            var balance = playerBalanceSheet[player.Id];
+                            <tr>
+                                <td class="text-center">
+                                    <span class="@GetRankBadgeClass(i)">@(i + 1)</span>
+                                </td>
+                                <td class="font-weight-bold">@player.Name</td>
+                                <td class="text-right tabular-nums @GetValueClass(balance)">@balance.ToString("$#,##0.00")</td>
+                                <td class="text-right tabular-nums text-muted">@playerRoundCount[player.Id]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <h2>年度排行榜</h2>
-    <div class="row flex-nowrap overflow-auto pb-2">
-        @foreach (int year in years)
-        {
-            <div class="col-auto px-0">
-                <table class="table table-bordered table-hover">
-                    <thead>
+
+    <div class="col-xl-8 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fa-solid fa-chart-line text-primary mr-2"></i>输赢趋势
+            </div>
+            <div class="card-body p-2">
+                <div id="chart" style="min-height: 400px; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex align-items-center mb-2 mt-2">
+    <h3 class="mb-0"><i class="fa-solid fa-calendar-days text-primary mr-2"></i>年度排行榜</h3>
+</div>
+
+<div class="d-flex flex-nowrap overflow-auto pb-3" style="gap: 1rem;">
+    @foreach (int year in years)
+    {
+        <div class="card mb-0 flex-shrink-0" style="min-width: 280px;">
+            <div class="card-header text-center font-weight-bold">
+                <i class="fa-regular fa-calendar mr-1 text-primary"></i>@year 年度
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="thead-light">
                         <tr>
-                            <th colspan="4" class="nowrap-header border-right-primary border-left-primary">@year</th>
-                        </tr>
-                        <tr>
-                            <th class="border-left-primary">排名</th>
+                            <th class="text-center">排名</th>
                             <th>玩家</th>
-                            <th>输赢</th>
-                            <th class="border-right-primary">盘数</th>
+                            <th class="text-right">输赢</th>
+                            <th class="text-right">盘数</th>
                         </tr>
                     </thead>
                     <tbody>
                         @for (int i = 0; i < rankedPlayersByYear[year].Count; i++)
                         {
                             var player = rankedPlayersByYear[year][i];
+                            var yearBal = playerBalanceSheetByYear[year][player.Id];
                             <tr>
-                                <td class="border-left-primary">@(i + 1)</td>
-                                <td>@player.Name</td>
-                                <td align="right">@playerBalanceSheetByYear[year][player.Id].ToString("$#,##0.00")</td>
-                                <td align="right" class="border-right-primary">@playerRoundCountByYear[year][player.Id]</td>
+                                <td class="text-center">
+                                    <span class="@GetRankBadgeClass(i)">@(i + 1)</span>
+                                </td>
+                                <td class="font-weight-bold">@player.Name</td>
+                                <td class="text-right tabular-nums @GetValueClass(yearBal)">@yearBal.ToString("$#,##0.00")</td>
+                                <td class="text-right tabular-nums text-muted">@playerRoundCountByYear[year][player.Id]</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>
 
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@latest/highcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@latest/modules/series-label.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@latest/modules/exporting.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@latest/modules/export-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@latest/modules/accessibility.js"></script>
+    <script src="~/Content/js/highcharts-helpers.js" asp-append-version="true"></script>
+    <script>
+        $(function () {
+            var categories = parseChartData(@Html.Raw(xAxisJson));
+            var series = parseChartData(@Html.Raw(seriesJson));
+
+            registerThemedChart(Highcharts.chart('chart', Highcharts.merge(getMahjongChartTheme(), {
+                chart: {
+                    type: 'spline',
+                    zoomType: 'x'
+                },
+                title: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: categories,
+                    tickInterval: 1
+                },
+                yAxis: {
+                    title: {
+                        text: '$'
+                    }
+                },
+                tooltip: {
+                    shared: true,
+                    valuePrefix: '$',
+                    valueDecimals: 2
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: series,
+                exporting: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false
+                }
+            })));
+        });
+    </script>
+}
