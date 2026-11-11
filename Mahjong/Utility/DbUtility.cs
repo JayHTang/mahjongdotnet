@@ -1,9 +1,14 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+
+[assembly: InternalsVisibleTo("Mahjong.Tests")]
 
 namespace Mahjong.Utility
 {
@@ -15,27 +20,30 @@ namespace Mahjong.Utility
 
     public class DbFactory
     {
-        public static DbUtility GetDbUtility(Db db)
+        public static IDbUtility GetDbUtility(Db db, ILogger<DbUtility>? logger = null)
         {
             if (db == Db.SQLServer)
             {
-                return new SqlServerUtility();
+                return new SqlServerUtility(logger);
             }
             else if (db == Db.SQLite)
             {
-                return new SqliteUtility();
+                return new SqliteUtility(logger);
             }
             throw new NotImplementedException();
         }
     }
 
-    public abstract class DbUtility
+    public abstract class DbUtility(ILogger<DbUtility>? logger = null) : IDbUtility
     {
+        protected readonly ILogger<DbUtility>? _logger = logger;
+
         public abstract DataTable Read(string db, string sql, params DbParameter[] parameters);
 
-        public DataRow ReadFirstRow(string db, string sql, params DbParameter[] parameters)
+        public DataRow? ReadFirstRow(string db, string sql, params DbParameter[] parameters)
         {
-            return Read(db, sql, parameters).Rows[0];
+            DataTable dt = Read(db, sql, parameters);
+            return dt.Rows.Count > 0 ? dt.Rows[0] : null;
         }
 
         public abstract int Insert(string db, string sql, params DbParameter[] parameters);
@@ -53,10 +61,9 @@ namespace Mahjong.Utility
         }
 
         public static readonly int Zero = 0;
-
     }
 
-    public class SqlServerUtility : DbUtility
+    public class SqlServerUtility(ILogger<DbUtility>? logger = null) : DbUtility(logger)
     {
         public override DataTable Read(string db, string sql, params DbParameter[] parameters)
         {
@@ -82,7 +89,10 @@ namespace Mahjong.Utility
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                if (_logger != null)
+                    _logger.LogError(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                else
+                    Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return dt;
@@ -109,7 +119,10 @@ namespace Mahjong.Utility
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                if (_logger != null)
+                    _logger.LogError(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                else
+                    Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;
@@ -132,18 +145,21 @@ namespace Mahjong.Utility
                 }
 
                 sqlConn.Open();
-                return (int)sqlCommand.ExecuteScalar();
+                return Convert.ToInt32(sqlCommand.ExecuteScalar());
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                if (_logger != null)
+                    _logger.LogError(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                else
+                    Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;
         }
     }
 
-    public class SqliteUtility : DbUtility
+    public class SqliteUtility(ILogger<DbUtility>? logger = null) : DbUtility(logger)
     {
         /// <summary>
         /// Read from a SQLite DB table with a query
@@ -176,7 +192,10 @@ namespace Mahjong.Utility
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                if (_logger != null)
+                    _logger.LogError(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                else
+                    Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return dt;
@@ -210,7 +229,10 @@ namespace Mahjong.Utility
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                if (_logger != null)
+                    _logger.LogError(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                else
+                    Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;
@@ -247,7 +269,10 @@ namespace Mahjong.Utility
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                if (_logger != null)
+                    _logger.LogError(ex, "Exception when executing {Sql} on {Db}", sql, db);
+                else
+                    Serilog.Log.Error(ex, "Exception when executing {Sql} on {Db}", sql, db);
             }
 
             return 0;

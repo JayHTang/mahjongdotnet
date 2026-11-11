@@ -1,1 +1,0 @@
-﻿SELECT * FROM rounddetail WHERE @roundId = 0 OR round_id = @roundId

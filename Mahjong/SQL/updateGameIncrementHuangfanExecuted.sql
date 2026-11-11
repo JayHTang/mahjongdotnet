@@ -1,1 +1,0 @@
-﻿UPDATE game SET huangfan_executed = huangfan_executed + 1 WHERE id = @gameId

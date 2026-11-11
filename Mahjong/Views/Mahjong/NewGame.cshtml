@@ -1,143 +1,140 @@
-﻿@using Mahjong.Models.Mahjong
+@using Mahjong.Models.Mahjong
 @model Game
 @{
     ViewBag.Title = "新开一局";
     var players = (List<Player>)ViewData["players"];
 }
 
-@section scripts{
-    <!-- Code for player list -->
-    <script type="text/javascript">
-        var ids = ['Player1Id', 'Player2Id', 'Player3Id', 'Player4Id'];
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-left-primary">
+                <div class="card-header">
+                    <i class="fa-solid fa-circle-play text-primary mr-2"></i>新开一局
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("NewGame", "Mahjong", FormMethod.Post, new { id = "new_game_form" }))
+                    {
+                        @Html.AntiForgeryToken()
 
-        function clearSelectOptions(selectElement) {
-            var i, L = selectElement.options.length - 1;
-            for (i = L; i >= 0; i--) {
-                selectElement.remove(i);
-            }
-        }
-        function getSelectedPlayerIds() {
-            playerids = new Set();
-            for (var i = 0; i < ids.length; i++) {
-                playerid = document.getElementById(ids[i]).value;
-                if (playerid != '')
-                    playerids.add(playerid);
-            }
-            return playerids;
-        }
-        function getPlayers(id) {
-            var select = document.getElementById(id);
-            if (select.options.length <= 1) {
-                var _players = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(players));
-                var selectedPlayers = getSelectedPlayerIds();
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label for="Player1Id" class="font-weight-bold">东</label>
+                                <select id="Player1Id" name="Player1Id" class="custom-select">
+                                    <option value="" selected="selected">---------</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <label for="Player2Id" class="font-weight-bold">南</label>
+                                <select id="Player2Id" name="Player2Id" class="custom-select">
+                                    <option value="" selected="selected">---------</option>
+                                </select>
+                            </div>
+                        </div>
 
-                if (select.options.length == 0) {
-                    var option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '---------';
-                    select.appendChild(option);
-                    select.value = '';
-                }
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label for="Player3Id" class="font-weight-bold">西</label>
+                                <select id="Player3Id" name="Player3Id" class="custom-select">
+                                    <option value="" selected="selected">---------</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <label for="Player4Id" class="font-weight-bold">北</label>
+                                <select id="Player4Id" name="Player4Id" class="custom-select">
+                                    <option value="" selected="selected">---------</option>
+                                </select>
+                            </div>
+                        </div>
 
-                for (var i = 0; i < _players.length; i++) {
-                    var player = _players[i];
-                    if (!selectedPlayers.has(String(player.Id))) {
-                        var option = document.createElement('option');
-                        option.value = player.Id;
-                        option.textContent = player.Name;
-                        select.appendChild(option);
+                        <hr class="my-3" />
+
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label for="HuaValue" class="font-weight-bold">花价 ($)</label>
+                                @Html.TextBoxFor(m => m.HuaValue, new { @class = "form-control", type = "number", step = "0.1", min = "0" })
+                                @Html.ValidationMessageFor(m => m.HuaValue)
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <label for="LeziValue" class="font-weight-bold">勒子价 ($)</label>
+                                @Html.TextBoxFor(m => m.LeziValue, new { @class = "form-control", type = "number", step = "1", min = "0" })
+                                @Html.ValidationMessageFor(m => m.LeziValue)
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fa-solid fa-dice mr-2"></i>搓起来
+                            </button>
+                        </div>
                     }
-                }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var seatIds = ['Player1Id', 'Player2Id', 'Player3Id', 'Player4Id'];
+            var seatNames = {
+                Player1Id: '坐东',
+                Player2Id: '坐南',
+                Player3Id: '坐西',
+                Player4Id: '坐北'
+            };
+            var allPlayers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(players));
+
+            function refreshSeatOptions() {
+                var selectedBySeat = {};
+                seatIds.forEach(function (id) {
+                    selectedBySeat[id] = $('#' + id).val() || '';
+                });
+
+                seatIds.forEach(function (id) {
+                    var $select = $('#' + id);
+                    var currentVal = selectedBySeat[id];
+                    $select.empty();
+                    $select.append($('<option>', { value: '', text: '---------' }));
+
+                    allPlayers.forEach(function (player) {
+                        var pid = String(player.Id);
+                        var takenElsewhere = seatIds.some(function (otherId) {
+                            return otherId !== id && selectedBySeat[otherId] === pid;
+                        });
+                        if (!takenElsewhere || pid === currentVal) {
+                            $select.append($('<option>', {
+                                value: pid,
+                                text: player.Name
+                            }));
+                        }
+                    });
+
+                    $select.val(currentVal);
+                });
             }
-        }
-        function updatedPlayerList(id) {
-            for (var i = 0; i < ids.length; i++) {
-                if (id == ids[i])
-                    continue;
-                var select = document.getElementById(ids[i]);
-                if (select.options.length > 1) {
-                    var val = select.value;
-                    clearSelectOptions(select);
-                    getPlayers(ids[i]);
-                    select.value = val;
-                }
-            }
-        }
-    </script>
 
-    <!-- Validator -->
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('#new_game_form').submit(function (e) {
-                var id1 = $('#new_game_form #Player1Id').val();
-                var id2 = $('#new_game_form #Player2Id').val();
-                var id3 = $('#new_game_form #Player3Id').val();
-                var id4 = $('#new_game_form #Player4Id').val();
+            refreshSeatOptions();
 
+            seatIds.forEach(function (id) {
+                $('#' + id).on('change', function () {
+                    $(this).next('.validation-alert').remove();
+                    refreshSeatOptions();
+                });
+            });
 
-                if (id1 == '') {
-                    alert("选择坐东的玩家");
-                    e.preventDefault();
-                }
-                else if (id2 == '') {
-                    alert("选择坐南的玩家");
-                    e.preventDefault();
-                }
-                else if (id3 == '') {
-                    alert("选择坐西的玩家");
-                    e.preventDefault();
-                }
-                else if (id4 == '') {
-                    alert("选择坐北的玩家");
-                    e.preventDefault();
+            $('#new_game_form').on('submit', function (e) {
+                $('#new_game_form .validation-alert').remove();
+                for (var i = 0; i < seatIds.length; i++) {
+                    var id = seatIds[i];
+                    var val = $('#' + id).val();
+                    if (!val) {
+                        $('#' + id).after('<span class="validation-alert">请选择' + seatNames[id] + '的玩家</span>');
+                        e.preventDefault();
+                    }
                 }
             });
         });
     </script>
 }
-
-<div class="container">
-    <h2>新开一局</h2>
-    @using (Html.BeginForm("NewGame", "Mahjong", FormMethod.Post, new { id = "new_game_form" }))
-    {
-        @Html.AntiForgeryToken()
-        <b>东:</b>
-        <select id="Player1Id" name="Player1Id" onclick="getPlayers('Player1Id')" onchange="updatedPlayerList('Player1Id')">
-            <option value="" selected="selected">---------</option>
-        </select>
-        <br /><p></p>
-
-        <b>南:</b>
-        <select id="Player2Id" name="Player2Id" onclick="getPlayers('Player2Id')" onchange="updatedPlayerList('Player2Id')">
-            <option value="" selected="selected">---------</option>
-        </select>
-        <br /><p></p>
-
-        <b>西:</b>
-        <select id="Player3Id" name="Player3Id" onclick="getPlayers('Player3Id')" onchange="updatedPlayerList('Player3Id')">
-            <option value="" selected="selected">---------</option>
-        </select>
-        <br /><p></p>
-
-        <b>北:</b>
-        <select id="Player4Id" name="Player4Id" onclick="getPlayers('Player4Id')" onchange="updatedPlayerList('Player4Id')">
-            <option value="" selected="selected">---------</option>
-        </select>
-        <br /><p></p>
-
-        <b>花价:</b><br />
-        @Html.TextBoxFor(m => m.HuaValue, new { type = "number", step = "0.1" })
-        @Html.ValidationMessageFor(m => m.HuaValue, "", new { @class = "alert" })
-        <br /><p></p>
-
-        <b>勒子价:</b><br />
-        @Html.TextBoxFor(m => m.LeziValue, new { type = "number" })
-        @Html.ValidationMessageFor(m => m.LeziValue, "", new { @class = "alert" })
-        <br /><p></p>
-
-        <input class="btn btn-dark" type="submit" value="搓起来" /><br /><p></p>
-    }
-
-
-</div>
-

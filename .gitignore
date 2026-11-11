@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -8,6 +8,18 @@
 /Mahjong/bin
 /Mahjong/obj
 /Mahjong/logs
+/Mahjong.Tests/bin
+/Mahjong.Tests/obj
+/Mahjong.Tests/TestResults
+/coveragereport
 /packages
+/.agent
+/tmp
 *.user
+
+# SQLite databases containing real/active data
 *.db
+*.db-journal
+*.db-shm
+*.db-wal
+!*.db.template

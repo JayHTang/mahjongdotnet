@@ -1,8 +1,20 @@
-﻿@{
-    ViewBag.Title = "Login Failure";
+@{
+    ViewBag.Title = "登录失败";
 }
 
-<hgroup>
-    <h2>@ViewBag.Title.</h2>
-    <h3 class="text-danger">Unsuccessful login with service.</h3>
-</hgroup>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-left-danger text-center p-4">
+                <div class="mb-3 text-danger">
+                    <i class="fa-solid fa-circle-xmark fa-3x"></i>
+                </div>
+                <h3 class="text-danger mb-2">外部服务登录失败</h3>
+                <p class="text-muted mb-3">无法通过第三方服务完成登录，请重试。</p>
+                <div>
+                    <a class="btn btn-outline-primary" href="@Url.Action("Login", "Account")">返回登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

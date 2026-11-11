@@ -1,39 +1,85 @@
-﻿@using Mahjong.Models.Mahjong
-
+@using Mahjong.Models.Mahjong
 @{
     ViewBag.Title = "历史战绩";
     var gameHistories = (List<GameHistory>)ViewData["gameHistories"];
 }
 
+@section css {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap4.min.css" />
+}
 
 <div class="container">
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>序号</th>
-                <th>开始时间</th>
-                <th>结束时间</th>
-                <th>时长</th>
-                <th>花/勒子</th>
-                <th>局数</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @for(int i = 0; i < gameHistories.Count; i++)
-            {
-                var gameHistory = gameHistories[i];
-                <tr>
-                    <td>@(gameHistories.Count - i)</td>
-                    <td>@gameHistory.Start</td>
-                    <td>@gameHistory.End</td>
-                    <td>@gameHistory.Duration().ToString(@"hh\:mm\:ss")</td>
-                    <td>@gameHistory.HuaValue.ToString("$#,##0.00")/@gameHistory.LeziValue.ToString("$#,##0.00")</td>
-                    <td>@gameHistory.NumOfRounds</td>
-                    <td><a href="@Url.Action("Game","Mahjong",new { gameId = gameHistory.GameId })">详情</a></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+        <div>
+            <h2 class="mb-0"><i class="fa-solid fa-clock-rotate-left text-primary mr-2"></i>历史战绩</h2>
+        </div>
+        <span class="badge badge-light badge-pill">共 @gameHistories.Count 场对局</span>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-3">
+            <div class="table-responsive border-0 shadow-none mb-0">
+                <table id="historyTable" class="table table-hover table-sm mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th class="text-center">序号</th>
+                            <th>开始时间</th>
+                            <th>结束时间</th>
+                            <th class="text-right">时长</th>
+                            <th class="text-right">花 / 勒子</th>
+                            <th class="text-right">局数</th>
+                            <th class="text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < gameHistories.Count; i++)
+                        {
+                            var gameHistory = gameHistories[i];
+                            var seq = gameHistories.Count - i;
+                            <tr>
+                                <td class="text-center font-weight-bold text-muted tabular-nums" data-order="@seq">@seq</td>
+                                <td class="tabular-nums">@gameHistory.Start.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="tabular-nums">@gameHistory.End.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="text-right tabular-nums">@gameHistory.Duration().ToString(@"hh\:mm\:ss")</td>
+                                <td class="text-right tabular-nums">@gameHistory.HuaValue.ToString("$#,##0.00") / @gameHistory.LeziValue.ToString("$#,##0.00")</td>
+                                <td class="text-right font-weight-bold tabular-nums">@gameHistory.NumOfRounds</td>
+                                <td class="text-center">
+                                    <a class="btn btn-outline-primary btn-sm" href="@Url.Action("Game", "Mahjong", new { gameId = gameHistory.GameId })">
+                                        <i class="fa-solid fa-eye mr-1"></i>详情
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
+@section scripts {
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        $(function () {
+            $('#historyTable').DataTable({
+                order: [[0, 'desc']],
+                pageLength: 25,
+                columnDefs: [
+                    { orderable: false, targets: 6 }
+                ],
+                language: {
+                    search: "搜索:",
+                    lengthMenu: "每页显示 _MENU_ 条",
+                    info: "第 _START_ 至 _END_ 条，共 _TOTAL_ 条",
+                    infoEmpty: "暂无记录",
+                    zeroRecords: "未找到匹配的对局",
+                    paginate: {
+                        previous: "上一页",
+                        next: "下一页"
+                    }
+                }
+            });
+        });
+    </script>
+}

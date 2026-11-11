@@ -1,7 +1,7 @@
-﻿@using Mahjong.Models.Mahjong
+@using Mahjong.Models.Mahjong
 @model Game
 @{
-    ViewBag.Title = "Change Players";
+    ViewBag.Title = "换人";
     var players = (List<Player>)ViewData["players"];
     var playersOnTable = (Dictionary<int, Player>)ViewData["playersOnTable"];
     var huaValue = (Decimal)ViewData["huaValue"];
@@ -9,61 +9,111 @@
     var prevGameId = (int)ViewData["prevGameId"];
 }
 
-<div class="container">
-    <h2>新开一局</h2>
-    @using (Html.BeginForm("Sub", "Mahjong", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-        <b>东:</b>
-        <select id="Player1Id" name="Player1Id">
-            <option value="@playersOnTable[1].Id" selected="selected">@playersOnTable[1].Name</option>
-            @foreach (var player in players)
-            {
-                <option value="@player.Id">@player.Name</option>
-            }
-        </select>
-        @Html.ValidationMessageFor(m => m.Player1Id, "", new { @class = "alert" })
-        <br /><p></p>
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-left-primary">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fa-solid fa-people-arrows text-primary mr-2"></i>换人</span>
+                    <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Game", "Mahjong", new { gameId = prevGameId })">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>返回牌局
+                    </a>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("Sub", "Mahjong", new { gameId = prevGameId }, FormMethod.Post, antiforgery: null, htmlAttributes: new { id = "sub_form" }))
+                    {
+                        @Html.AntiForgeryToken()
 
-        <b>南:</b>
-        <select id="Player2Id" name="Player2Id">
-            <option value="@playersOnTable[2].Id" selected="selected">@playersOnTable[2].Name</option>
-            @foreach (var player in players)
-            {
-                <option value="@player.Id">@player.Name</option>
-            }
-        </select>
-        @Html.ValidationMessageFor(m => m.Player2Id, "", new { @class = "alert" })
-        <br /><p></p>
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label for="Player1Id" class="font-weight-bold">东</label>
+                                <select id="Player1Id" name="Player1Id" class="custom-select" data-initial="@playersOnTable[1].Id">
+                                    <option value="@playersOnTable[1].Id" selected="selected">@playersOnTable[1].Name</option>
+                                    @foreach (var player in players.Where(p => p.Id != playersOnTable[1].Id))
+                                    {
+                                        <option value="@player.Id">@player.Name</option>
+                                    }
+                                </select>
+                                @Html.ValidationMessageFor(m => m.Player1Id)
+                            </div>
 
-        <b>西:</b>
-        <select id="Player3Id" name="Player3Id">
-            <option value="@playersOnTable[3].Id" selected="selected">@playersOnTable[3].Name</option>
-            @foreach (var player in players)
-            {
-                <option value="@player.Id">@player.Name</option>
-            }
-        </select>
-        @Html.ValidationMessageFor(m => m.Player3Id, "", new { @class = "alert" })
-        <br /><p></p>
+                            <div class="form-group col-sm-6">
+                                <label for="Player2Id" class="font-weight-bold">南</label>
+                                <select id="Player2Id" name="Player2Id" class="custom-select" data-initial="@playersOnTable[2].Id">
+                                    <option value="@playersOnTable[2].Id" selected="selected">@playersOnTable[2].Name</option>
+                                    @foreach (var player in players.Where(p => p.Id != playersOnTable[2].Id))
+                                    {
+                                        <option value="@player.Id">@player.Name</option>
+                                    }
+                                </select>
+                                @Html.ValidationMessageFor(m => m.Player2Id)
+                            </div>
+                        </div>
 
-        <b>北:</b>
-        <select id="Player4Id" name="Player4Id">
-            <option value="@playersOnTable[4].Id" selected="selected">@playersOnTable[4].Name</option>
-            @foreach (var player in players)
-            {
-                <option value="@player.Id">@player.Name</option>
-            }
-        </select>
-        @Html.ValidationMessageFor(m => m.Player4Id, "", new { @class = "alert" })
-        <br /><p></p>
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label for="Player3Id" class="font-weight-bold">西</label>
+                                <select id="Player3Id" name="Player3Id" class="custom-select" data-initial="@playersOnTable[3].Id">
+                                    <option value="@playersOnTable[3].Id" selected="selected">@playersOnTable[3].Name</option>
+                                    @foreach (var player in players.Where(p => p.Id != playersOnTable[3].Id))
+                                    {
+                                        <option value="@player.Id">@player.Name</option>
+                                    }
+                                </select>
+                                @Html.ValidationMessageFor(m => m.Player3Id)
+                            </div>
 
-        @Html.Hidden("HuaValue", huaValue)
-        @Html.Hidden("LeziValue", leziValue)
-        @Html.Hidden("GameId", prevGameId)
+                            <div class="form-group col-sm-6">
+                                <label for="Player4Id" class="font-weight-bold">北</label>
+                                <select id="Player4Id" name="Player4Id" class="custom-select" data-initial="@playersOnTable[4].Id">
+                                    <option value="@playersOnTable[4].Id" selected="selected">@playersOnTable[4].Name</option>
+                                    @foreach (var player in players.Where(p => p.Id != playersOnTable[4].Id))
+                                    {
+                                        <option value="@player.Id">@player.Name</option>
+                                    }
+                                </select>
+                                @Html.ValidationMessageFor(m => m.Player4Id)
+                            </div>
+                        </div>
 
-        <input class="btn btn-dark" type="submit" value="继续搓" /><br /><p></p>
-    }
+                        @Html.Hidden("HuaValue", huaValue)
+                        @Html.Hidden("LeziValue", leziValue)
+                        @Html.Hidden("GameId", prevGameId)
 
-
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="text-muted small">花 / 勒子: @huaValue.ToString("$#,##0.00") / @leziValue.ToString("$#,##0.00")</span>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa-solid fa-play mr-1"></i>继续搓
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var seatIds = ['Player1Id', 'Player2Id', 'Player3Id', 'Player4Id'];
+
+            $('#sub_form').on('submit', function (e) {
+                $('#sub_form .validation-alert').remove();
+                var seen = {};
+                seatIds.forEach(function (id) {
+                    var val = $('#' + id).val();
+                    if (!val) {
+                        $('#' + id).after('<span class="validation-alert">请选择玩家</span>');
+                        e.preventDefault();
+                    } else if (seen[val]) {
+                        $('#' + id).after('<span class="validation-alert">同一玩家不能坐两个位置</span>');
+                        e.preventDefault();
+                    } else {
+                        seen[val] = true;
+                    }
+                });
+            });
+        });
+    </script>
+}

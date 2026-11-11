@@ -1,4 +1,9 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.IO;
 using Mahjong.Models;
+using Mahjong.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -6,30 +11,103 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseSerilog();
+
+static string? GetSqliteDbPath(string? connectionString)
+{
+    if (string.IsNullOrWhiteSpace(connectionString)) return null;
+    try
+    {
+        var csb = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString);
+        return csb.DataSource;
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+static void EnsureDatabaseFromTemplate(string? connectionString, string contentRootPath, string templateFileName)
+{
+    var dbPath = GetSqliteDbPath(connectionString);
+    if (string.IsNullOrWhiteSpace(dbPath)) return;
+
+    var dir = Path.GetDirectoryName(dbPath);
+    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+    {
+        Directory.CreateDirectory(dir);
+    }
+
+    if (!File.Exists(dbPath) && File.Exists(dbPath + ".template"))
+    {
+        File.Copy(dbPath + ".template", dbPath);
+    }
+
+    var fallbackTemplate = Path.Combine(contentRootPath, "App_Data", "db", templateFileName);
+    if (!File.Exists(dbPath) && File.Exists(fallbackTemplate))
+    {
+        File.Copy(fallbackTemplate, dbPath);
+    }
+}
+
+// Set default culture to en-US for consistent currency formatting
+var cultureInfo = new CultureInfo("en-US");
+cultureInfo.NumberFormat.CurrencyNegativePattern = 1; // -$1.00 instead of ($1.00)
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
 
+builder.Host.UseSerilog();
+
 builder.Services.AddSystemWebAdapters()
-.AddWrappedAspNetCoreSession()
-.AddJsonSessionSerializer(options =>
-{
-    options.RegisterKey<string>("MachineName");
-    options.RegisterKey<string>("SessionStartTime");
-});
+    .AddWrappedAspNetCoreSession()
+    .AddJsonSessionSerializer(options =>
+    {
+        options.RegisterKey<string>("MachineName");
+        options.RegisterKey<string>("SessionStartTime");
+    });
 
 // Add services to the container.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+    options.UseSqlite(sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+
+    options.User.RequireUniqueEmail = false;
+})
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IDbUtility>(provider =>
+#if SQLITE
+    DbFactory.GetDbUtility(
+        Db.SQLite,
+        provider.GetRequiredService<ILogger<DbUtility>>()
+    )
+#else
+    DbFactory.GetDbUtility(
+        Db.SQLServer,
+        provider.GetRequiredService<ILogger<DbUtility>>()
+    )
+#endif
+);
+builder.Services.AddScoped<IMahjongService, MahjongService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddMemoryCache();
@@ -43,7 +121,20 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
+// Ensure databases exist (copying from .template if necessary)
+EnsureDatabaseFromTemplate(app.Configuration.GetConnectionString("Mahjong"), app.Environment.ContentRootPath, "Mahjong.db.template");
+EnsureDatabaseFromTemplate(app.Configuration.GetConnectionString("DefaultConnection"), app.Environment.ContentRootPath, "Authentication.db.template");
+
 app.UseForwardedHeaders();
+
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} from {RemoteIpAddress} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+    };
+});
 
 if (!app.Environment.IsDevelopment())
 {
@@ -64,7 +155,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Mahjong}/{action=Stats}/{id?}")
     .RequireSystemWebAdapterSession();
-
 
 // Migration hack for missing columns in SQLite
 using (var scope = app.Services.CreateScope())
@@ -123,10 +213,6 @@ using (var scope = app.Services.CreateScope())
         if (!hasLockoutEnabled)
         {
             using var alterCmd = connection.CreateCommand();
-            // SQLite doesn't have a boolean type, so define as INTEGER (0 or 1)
-            // But EF Core maps bool to INTEGER anyway.
-            // Also need to be careful if user wants a default value.
-            // Using INTEGER DEFAULT 0 (false) seems safe for LockoutEnabled in this context
             alterCmd.CommandText = "ALTER TABLE AspNetUsers ADD COLUMN LockoutEnabled INTEGER NOT NULL DEFAULT 0;";
             alterCmd.ExecuteNonQuery();
         }
@@ -247,3 +333,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+public partial class Program { }

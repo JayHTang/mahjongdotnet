@@ -1,111 +1,66 @@
-﻿$(document).ready(function () {
-    $('#result_form').submit(function (e) {
-        var winner = $('#result_form #WinnerId').val();
-        var zimo = $('#result_form #Zimo').is(':checked');
-        var dianpao = $('#result_form #DianpaoId').val();
-        var chengbao = $('#result_form #ChengbaoId').val();
-        var qianggang = $('#result_form #Qianggang').is(':checked');
-        var gangkai = $('#result_form #Gangkai').is(':checked');
-        var hand = $('#result_form #HandId').val();
+$(document).ready(function () {
+    function appendValidationError(formSelector, fieldSelector, message) {
+        var $field = $(formSelector + " " + fieldSelector);
+        if (!$field.length) return;
+        var $pill = $field.closest(".mahjong-check-item");
+        var $error = $('<span class="validation-alert">' + message + '</span>');
+        if ($pill.length) {
+            $pill.append($error);
+        } else {
+            $field.after($error);
+        }
+    }
 
-        $(".alert").remove();
-        if (winner != 0) {
-            if (!zimo && dianpao == 0) {
-                $('#result_form #Zimo').after('<span class="alert alert-danger">必须自摸或点炮</span>');
-                $('#result_form #DianpaoId').after('<span class="alert alert-danger">必须自摸或点炮</span>');
+    function validateRoundForm(formSelector, e) {
+        var winner = $(formSelector + " #WinnerId").val();
+        var zimo = $(formSelector + " #Zimo").is(":checked");
+        var dianpao = $(formSelector + " #DianpaoId").val();
+        var chengbao = $(formSelector + " #ChengbaoId").val();
+        var qianggang = $(formSelector + " #Qianggang").is(":checked");
+        var gangkai = $(formSelector + " #Gangkai").is(":checked");
+        var hand = $(formSelector + " #HandId").val();
+
+        $(formSelector + " .validation-alert").remove();
+
+        if (winner && winner != 0) {
+            if (!zimo && (!dianpao || dianpao == 0)) {
+                appendValidationError(formSelector, "#Zimo", "必须自摸或点炮");
+                appendValidationError(formSelector, "#DianpaoId", "必须自摸或点炮");
                 e.preventDefault();
-            }
-            else if (zimo && qianggang && !gangkai) {
-                $('#result_form #Gangkai').after('<span class="alert alert-danger">送杠必须杠开</span>');
+            } else if (zimo && qianggang && !gangkai) {
+                appendValidationError(formSelector, "#Gangkai", "送杠必须杠开");
                 e.preventDefault();
-            }
-            else if (!zimo && qianggang && gangkai) {
-                $('#result_form #Gangkai').after('<span class="alert alert-danger">抢杠不算杠开</span>');
+            } else if (!zimo && qianggang && gangkai) {
+                appendValidationError(formSelector, "#Gangkai", "抢杠不算杠开");
                 e.preventDefault();
-            }
-            else if (zimo && dianpao != 0 && !qianggang) {
-                $('#result_form #Zimo').after('<span class="alert alert-danger">不可同时自摸和点炮</span>');
-                $('#result_form #DianpaoId').after('<span class="alert alert-danger">不可同时自摸和点炮</span>');
+            } else if (zimo && dianpao && dianpao != 0 && !qianggang) {
+                appendValidationError(formSelector, "#Zimo", "不可同时自摸和点炮");
+                appendValidationError(formSelector, "#DianpaoId", "不可同时自摸和点炮");
                 e.preventDefault();
-            }
-            else if (winner == dianpao) {
-                $('#result_form #WinnerId').after('<span class="alert alert-danger">不可点自己炮</span>');
-                $('#result_form #DianpaoId').after('<span class="alert alert-danger">不可点自己炮</span>');
+            } else if (winner == dianpao) {
+                appendValidationError(formSelector, "#WinnerId", "不可点自己炮");
+                appendValidationError(formSelector, "#DianpaoId", "不可点自己炮");
                 e.preventDefault();
-            }
-            else if (winner == chengbao) {
-                $('#result_form #WinnerId').after('<span class="alert alert-danger">不可承包自己</span>');
-                $('#result_form #ChengbaoId').after('<span class="alert alert-danger">不可承包自己</span>');
+            } else if (winner == chengbao) {
+                appendValidationError(formSelector, "#WinnerId", "不可承包自己");
+                appendValidationError(formSelector, "#ChengbaoId", "不可承包自己");
                 e.preventDefault();
-            }
-            else if (qianggang && dianpao == 0) {
-                $('#result_form #Qianggang').after('<span class="alert alert-danger">抢杠必须有人点炮</span>');
-                $('#result_form #DianpaoId').after('<span class="alert alert-danger">抢杠必须有人点炮</span>');
+            } else if (qianggang && (!dianpao || dianpao == 0)) {
+                appendValidationError(formSelector, "#Qianggang", "抢杠必须有人点炮");
+                appendValidationError(formSelector, "#DianpaoId", "抢杠必须有人点炮");
                 e.preventDefault();
-            }
-            else if (hand == 0) {
-                $('#result_form #HandId').after('<span class="alert alert-danger">请选择牌型</span>');
+            } else if (!hand || hand == 0) {
+                appendValidationError(formSelector, "#HandId", "请选择牌型");
                 e.preventDefault();
-            }
-            else {
-                $(this).unbind('submit').submit();
             }
         }
+    }
 
+    $("#result_form").on("submit", function (e) {
+        validateRoundForm("#result_form", e);
     });
 
-    $('#edit_form').submit(function (e) {
-        var winner = $('#edit_form #WinnerId').val();
-        var zimo = $('#edit_form #Zimo').is(':checked');
-        var dianpao = $('#edit_form #DianpaoId').val();
-        var chengbao = $('#edit_form #ChengbaoId').val();
-        var qianggang = $('#edit_form #Qianggang').is(':checked');
-        var gangkai = $('#edit_form #Gangkai').is(':checked');
-        var hand = $('#edit_form #HandId').val();
-
-        $(".alert").remove();
-        if (winner != 0) {
-            if (!zimo && dianpao == 0) {
-                $('#edit_form #Zimo').after('<span class="alert alert-danger">必须自摸或点炮</span>');
-                $('#edit_form #DianpaoId').after('<span class="alert alert-danger">必须自摸或点炮</span>');
-                e.preventDefault();
-            }
-            else if (zimo && qianggang && !gangkai) {
-                $('#edit_form #Gangkai').after('<span class="alert alert-danger">送杠必须杠开</span>');
-                e.preventDefault();
-            }
-            else if (!zimo && qianggang && gangkai) {
-                $('#edit_form #Gangkai').after('<span class="alert alert-danger">抢杠不算杠开</span>');
-                e.preventDefault();
-            }
-            else if (zimo && dianpao != 0 && !qianggang) {
-                $('#edit_form #Zimo').after('<span class="alert alert-danger">不可同时自摸和点炮</span>');
-                $('#edit_form #DianpaoId').after('<span class="alert alert-danger">不可同时自摸和点炮</span>');
-                e.preventDefault();
-            }
-            else if (winner == dianpao) {
-                $('#edit_form #WinnerId').after('<span class="alert alert-danger">不可点自己炮</span>');
-                $('#edit_form #DianpaoId').after('<span class="alert alert-danger">不可点自己炮</span>');
-                e.preventDefault();
-            }
-            else if (winner == chengbao) {
-                $('#edit_form #WinnerId').after('<span class="alert alert-danger">不可承包自己</span>');
-                $('#edit_form #ChengbaoId').after('<span class="alert alert-danger">不可承包自己</span>');
-                e.preventDefault();
-            }
-            else if (qianggang && dianpao == 0) {
-                $('#edit_form #Qianggang').after('<span class="alert alert-danger">抢杠必须有人点炮</span>');
-                $('#edit_form #DianpaoId').after('<span class="alert alert-danger">抢杠必须有人点炮</span>');
-                e.preventDefault();
-            }
-            else if (hand == 0) {
-                $('#edit_form #HandId').after('<span class="alert alert-danger">请选择牌型</span>');
-                e.preventDefault();
-            }
-            else {
-                $(this).unbind('submit').submit();
-            }
-        }
-
+    $("#edit_form").on("submit", function (e) {
+        validateRoundForm("#edit_form", e);
     });
 });
